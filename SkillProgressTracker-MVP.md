@@ -1225,189 +1225,686 @@ Get AI-powered next chapter suggestion.
 
 ---
 
-# Backend Architecture
+# Backend Architecture (NestJS)
 
 ## Folder Structure
 
 ```
 backend/
+│
 ├── src/
+│   ├── app.module.ts              # Root module
+│   ├── main.ts                    # Application entry point
+│   │
 │   ├── config/
-│   │   ├── database.ts          # MongoDB connection
-│   │   └── env.ts                # Environment variables
-│   ├── models/
-│   │   ├── User.ts               # User Mongoose model
-│   │   ├── LearningPath.ts       # LearningPath model
-│   │   └── Chapter.ts            # Chapter model
-│   ├── middleware/
-│   │   ├── auth.ts               # JWT verification
-│   │   ├── errorHandler.ts       # Global error handling
-│   │   ├── validator.ts          # Zod validation middleware
-│   │   └── requestId.ts          # Request ID tracking
-│   ├── controllers/
-│   │   ├── authController.ts
-│   │   ├── learningPathController.ts
-│   │   ├── chapterController.ts
-│   │   └── aiController.ts
-│   ├── services/
-│   │   ├── authService.ts        # Business logic for auth
-│   │   ├── learningPathService.ts
-│   │   ├── chapterService.ts
-│   │   ├── streakService.ts      # Streak calculation
-│   │   ├── progressService.ts    # Progress calculation
-│   │   ├── aiService.ts          # AI integration
-│   │   └── aiClient.ts           # Gemini API client
-│   ├── routes/
-│   │   ├── authRoutes.ts
-│   │   ├── learningPathRoutes.ts
-│   │   ├── chapterRoutes.ts
-│   │   └── aiRoutes.ts
-│   ├── utils/
-│   │   ├── jwt.ts                # JWT sign/verify
-│   │   ├── hash.ts               # Password hashing
-│   │   ├── logger.ts             # Logging utility
-│   │   └── responseFormatter.ts  # Standard response format
-│   ├── validation/
-│   │   ├── authSchemas.ts        # Zod schemas for auth
-│   │   ├── learningPathSchemas.ts
-│   │   └── chapterSchemas.ts
-│   ├── types/
-│   │   └── express.d.ts          # TypeScript type extensions
-│   ├── app.ts                    # Express app setup
-│   └── server.ts                 # Server entry point
+│   │   ├── env.config.ts          # Environment configuration
+│   │   ├── mongo.config.ts        # MongoDB configuration
+│   │   └── ai.config.ts           # AI provider configuration
+│   │
+│   ├── common/
+│   │   ├── guards/
+│   │   │   └── auth.guard.ts      # Better Auth session guard
+│   │   ├── decorators/
+│   │   │   └── current-user.decorator.ts  # Extract user from request
+│   │   ├── interceptors/
+│   │   │   ├── transform.interceptor.ts   # Response formatting
+│   │   │   └── logging.interceptor.ts     # Request logging
+│   │   ├── filters/
+│   │   │   └── http-exception.filter.ts   # Global exception handling
+│   │   └── utils/
+│   │       ├── response.util.ts           # Response formatting helpers
+│   │       └── date.util.ts               # Date utilities
+│   │
+│   ├── auth/
+│   │   ├── auth.module.ts         # Better Auth module
+│   │   ├── auth.service.ts        # Better Auth integration
+│   │   └── auth.controller.ts     # Auth endpoint handler (/api/auth/*)
+│   │
+│   ├── database/
+│   │   └── database.module.ts     # MongoDB/Mongoose configuration module
+│   │
+│   ├── schemas/
+│   │   ├── learning-path.schema.ts  # Mongoose schema for LearningPath
+│   │   ├── chapter.schema.ts        # Mongoose schema for Chapter
+│   │   └── note.schema.ts           # Embedded schema for notes
+│   │
+│   ├── modules/
+│   │   ├── users/
+│   │   │   ├── users.module.ts
+│   │   │   ├── users.service.ts       # User-related business logic
+│   │   │   └── users.controller.ts    # User endpoints (optional for MVP)
+│   │   │
+│   │   ├── learning-paths/
+│   │   │   ├── learning-paths.module.ts
+│   │   │   ├── learning-paths.service.ts
+│   │   │   ├── learning-paths.controller.ts
+│   │   │   └── dto/
+│   │   │       ├── create-learning-path.dto.ts
+│   │   │       └── update-learning-path.dto.ts
+│   │   │
+│   │   ├── chapters/
+│   │   │   ├── chapters.module.ts
+│   │   │   ├── chapters.service.ts
+│   │   │   ├── chapters.controller.ts
+│   │   │   └── dto/
+│   │   │       ├── create-chapter.dto.ts
+│   │   │       ├── update-chapter.dto.ts
+│   │   │       └── add-note.dto.ts
+│   │   │
+│   │   ├── progress/
+│   │   │   ├── progress.module.ts
+│   │   │   ├── progress.service.ts    # Progress calculation logic
+│   │   │   └── progress.controller.ts # Progress endpoints
+│   │   │
+│   │   ├── streaks/
+│   │   │   ├── streaks.module.ts
+│   │   │   ├── streaks.service.ts     # Streak calculation logic
+│   │   │   └── streaks.controller.ts  # Streak endpoints
+│   │   │
+│   │   └── ai/
+│   │       ├── ai.module.ts
+│   │       ├── ai.service.ts          # AI recommendation logic
+│   │       ├── ai.controller.ts       # AI endpoints
+│   │       ├── ai-client.service.ts   # Gemini API wrapper
+│   │       └── dto/
+│   │           └── get-recommendation.dto.ts
+│   │
+│   └── types/
+│       ├── user.d.ts                  # User type extensions
+│       └── auth-session.d.ts          # Better Auth session types
+│
+├── test/
+│   ├── app.e2e-spec.ts
+│   └── jest-e2e.json
+│
 ├── .env.example
 ├── package.json
 ├── tsconfig.json
+├── nest-cli.json
 └── README.md
 ```
 
 ---
 
-## Request Flow
+## NestJS Request Lifecycle
 
 ```
-1. Client Request
+1. Client Request (HTTP)
          │
          ▼
-2. Route (e.g., POST /learning-paths)
+2. Global Middleware (Optional)
+   - CORS, body parser (built-in)
+   - Request ID generation
          │
          ▼
-3. Middleware Chain
-   - requestId → add unique ID
-   - auth → verify JWT
-   - validator → validate body with Zod
+3. Guards (@UseGuards)
+   - AuthGuard → Verify Better Auth session
+   - Extract user from session
          │
          ▼
-4. Controller (learningPathController.ts)
-   - Extract data from req
-   - Call service layer
+4. Interceptors (Before) - @UseInterceptors
+   - LoggingInterceptor → Log request details
+   - TransformInterceptor → Prepare response format
          │
          ▼
-5. Service (learningPathService.ts)
-   - Business logic
+5. Pipes (Validation) - @UsePipes / Auto-validation
+   - ValidationPipe → Validate DTO with class-validator
+   - Transform input to DTO instances
+         │
+         ▼
+6. Controller Method (@Post, @Get, etc.)
+   - Extract route params, body, user via decorators
+   - Call service method via dependency injection
+         │
+         ▼
+7. Service (Injectable)
+   - Business logic execution
    - Interact with Mongoose models
-   - Call other services if needed
+   - Call other injected services
          │
          ▼
-6. Mongoose Model
-   - Validate data (schema validation)
+8. Mongoose Schema
+   - Schema-level validation
+   - Pre/post hooks (if defined)
    - Save to MongoDB
          │
          ▼
-7. Response
-   - Format response (responseFormatter)
-   - Return to client
+9. Interceptors (After)
+   - Transform response data
+   - Add metadata (timestamp, requestId)
+         │
+         ▼
+10. Exception Filters (if error occurs)
+    - HttpExceptionFilter → Format error response
+    - Log errors
+         │
+         ▼
+11. Response to Client
+    - Standardized JSON format
 ```
+
+### 🎓 NestJS Concepts Explained
+
+**Guards**: Determine if a request should be handled (authentication, authorization)
+
+**Interceptors**: Transform requests/responses, add logging, bind extra logic
+
+**Pipes**: Transform and validate input data (DTOs with class-validator)
+
+**Dependency Injection**: Services are automatically injected via constructor
+
+**Decorators**: `@Controller`, `@Injectable`, `@Get`, `@Post`, `@Body`, etc.
+
+
 
 ---
 
-## Example: Create Learning Path
+## Example: Create Learning Path (NestJS)
 
-### Route Definition
+### DTO (Data Transfer Object)
 ```typescript
-// src/routes/learningPathRoutes.ts
-import express from 'express';
-import { authMiddleware } from '../middleware/auth';
-import { validate } from '../middleware/validator';
-import { createLearningPathSchema } from '../validation/learningPathSchemas';
-import { createLearningPath } from '../controllers/learningPathController';
+// src/modules/learning-paths/dto/create-learning-path.dto.ts
+import { IsString, IsEnum, IsOptional, MinLength, MaxLength } from 'class-validator';
 
-const router = express.Router();
+export class CreateLearningPathDto {
+  @IsString()
+  @MinLength(1, { message: 'Name must not be empty' })
+  @MaxLength(100, { message: 'Name must not exceed 100 characters' })
+  name: string;
 
-router.post(
-  '/',
-  authMiddleware,
-  validate(createLearningPathSchema),
-  createLearningPath
-);
+  @IsOptional()
+  @IsString()
+  @MaxLength(500, { message: 'Description must not exceed 500 characters' })
+  description?: string;
 
-export default router;
-```
-
-### Validation Schema
-```typescript
-// src/validation/learningPathSchemas.ts
-import { z } from 'zod';
-
-export const createLearningPathSchema = z.object({
-  body: z.object({
-    name: z.string().min(1).max(100),
-    description: z.string().max(500).optional(),
-    skillLevel: z.enum(['beginner', 'intermediate', 'advanced'])
+  @IsEnum(['beginner', 'intermediate', 'advanced'], {
+    message: 'Skill level must be beginner, intermediate, or advanced'
   })
-});
+  skillLevel: 'beginner' | 'intermediate' | 'advanced';
+}
 ```
 
 ### Controller
 ```typescript
-// src/controllers/learningPathController.ts
-import { Request, Response, NextFunction } from 'express';
-import * as learningPathService from '../services/learningPathService';
-import { formatSuccessResponse } from '../utils/responseFormatter';
+// src/modules/learning-paths/learning-paths.controller.ts
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  HttpCode,
+  HttpStatus
+} from '@nestjs/common';
+import { LearningPathsService } from './learning-paths.service';
+import { CreateLearningPathDto } from './dto/create-learning-path.dto';
+import { UpdateLearningPathDto } from './dto/update-learning-path.dto';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
-export async function createLearningPath(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    const userId = req.user!.id; // From authMiddleware
-    const data = req.body;
-    
-    const learningPath = await learningPathService.create(userId, data);
-    
-    res.status(201).json(formatSuccessResponse(learningPath, req.id));
-  } catch (error) {
-    next(error); // Pass to error handler
+@Controller('learning-paths')
+@UseGuards(AuthGuard) // All routes require authentication
+export class LearningPathsController {
+  constructor(private readonly learningPathsService: LearningPathsService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @CurrentUser('id') userId: string, // Extract user ID from session
+    @Body() createDto: CreateLearningPathDto // Auto-validated by ValidationPipe
+  ) {
+    return this.learningPathsService.create(userId, createDto);
+  }
+
+  @Get()
+  async findAll(@CurrentUser('id') userId: string) {
+    return this.learningPathsService.findAll(userId);
+  }
+
+  @Get(':id')
+  async findOne(
+    @CurrentUser('id') userId: string,
+    @Param('id') pathId: string
+  ) {
+    return this.learningPathsService.findOne(userId, pathId);
+  }
+
+  @Patch(':id')
+  async update(
+    @CurrentUser('id') userId: string,
+    @Param('id') pathId: string,
+    @Body() updateDto: UpdateLearningPathDto
+  ) {
+    return this.learningPathsService.update(userId, pathId, updateDto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @CurrentUser('id') userId: string,
+    @Param('id') pathId: string
+  ) {
+    return this.learningPathsService.remove(userId, pathId);
   }
 }
 ```
 
 ### Service
 ```typescript
-// src/services/learningPathService.ts
-import { LearningPath, ILearningPath } from '../models/LearningPath';
+// src/modules/learning-paths/learning-paths.service.ts
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { LearningPath, LearningPathDocument } from '../../schemas/learning-path.schema';
+import { CreateLearningPathDto } from './dto/create-learning-path.dto';
+import { UpdateLearningPathDto } from './dto/update-learning-path.dto';
 
-export async function create(
-  userId: string,
-  data: { name: string; description?: string; skillLevel: string }
-): Promise<ILearningPath> {
-  const learningPath = new LearningPath({
-    userId,
-    name: data.name,
-    description: data.description || '',
-    skillLevel: data.skillLevel,
-    progress: 0
-  });
-  
-  await learningPath.save();
-  return learningPath;
+@Injectable()
+export class LearningPathsService {
+  constructor(
+    @InjectModel(LearningPath.name)
+    private learningPathModel: Model<LearningPathDocument>
+  ) {}
+
+  async create(
+    userId: string,
+    createDto: CreateLearningPathDto
+  ): Promise<LearningPath> {
+    const learningPath = new this.learningPathModel({
+      userId,
+      name: createDto.name,
+      description: createDto.description || '',
+      skillLevel: createDto.skillLevel,
+      progress: 0
+    });
+
+    await learningPath.save();
+    return learningPath;
+  }
+
+  async findAll(userId: string): Promise<LearningPath[]> {
+    return this.learningPathModel
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findOne(userId: string, pathId: string): Promise<LearningPath> {
+    const learningPath = await this.learningPathModel.findById(pathId).exec();
+
+    if (!learningPath) {
+      throw new NotFoundException('Learning path not found');
+    }
+
+    if (learningPath.userId.toString() !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return learningPath;
+  }
+
+  async update(
+    userId: string,
+    pathId: string,
+    updateDto: UpdateLearningPathDto
+  ): Promise<LearningPath> {
+    const learningPath = await this.findOne(userId, pathId);
+
+    Object.assign(learningPath, updateDto);
+    await learningPath.save();
+
+    return learningPath;
+  }
+
+  async remove(userId: string, pathId: string): Promise<void> {
+    const learningPath = await this.findOne(userId, pathId);
+    await learningPath.deleteOne();
+  }
 }
+```
+
+### Module
+```typescript
+// src/modules/learning-paths/learning-paths.module.ts
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { LearningPathsController } from './learning-paths.controller';
+import { LearningPathsService } from './learning-paths.service';
+import { LearningPath, LearningPathSchema } from '../../schemas/learning-path.schema';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: LearningPath.name, schema: LearningPathSchema }
+    ])
+  ],
+  controllers: [LearningPathsController],
+  providers: [LearningPathsService],
+  exports: [LearningPathsService] // Export for use in other modules
+})
+export class LearningPathsModule {}
+```
+
+### Mongoose Schema (NestJS Style)
+```typescript
+// src/schemas/learning-path.schema.ts
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
+
+export type LearningPathDocument = LearningPath & Document;
+
+@Schema({ timestamps: true })
+export class LearningPath {
+  @Prop({ type: Types.ObjectId, required: true, index: true })
+  userId: Types.ObjectId;
+
+  @Prop({ required: true, trim: true, minlength: 1, maxlength: 100 })
+  name: string;
+
+  @Prop({ trim: true, maxlength: 500, default: '' })
+  description: string;
+
+  @Prop({
+    required: true,
+    enum: ['beginner', 'intermediate', 'advanced']
+  })
+  skillLevel: string;
+
+  @Prop({ default: 0, min: 0, max: 100 })
+  progress: number;
+
+  // Timestamps (createdAt, updatedAt) added automatically
+}
+
+export const LearningPathSchema = SchemaFactory.createForClass(LearningPath);
+
+// Indexes
+LearningPathSchema.index({ userId: 1, createdAt: -1 });
+```
+
+---
+
+## NestJS Configuration Examples
+
+### AuthGuard (Better Auth Integration)
+```typescript
+// src/common/guards/auth.guard.ts
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { auth } from '../../auth/auth.service';
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    
+    try {
+      // Verify Better Auth session
+      const session = await auth.api.getSession({
+        headers: request.headers
+      });
+      
+      if (!session || !session.user) {
+        throw new UnauthorizedException('Invalid or missing session');
+      }
+      
+      // Attach user and session to request object
+      request.user = session.user;
+      request.session = session.session;
+      
+      return true;
+    } catch (error) {
+      throw new UnauthorizedException('Authentication failed');
+    }
+  }
+}
+```
+
+### CurrentUser Decorator
+```typescript
+// src/common/decorators/current-user.decorator.ts
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+export const CurrentUser = createParamDecorator(
+  (data: string, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    const user = request.user;
+
+    return data ? user?.[data] : user;
+  },
+);
+
+// Usage in controller:
+// @Get()
+// async findAll(@CurrentUser() user: any) { ... }
+//
+// @Get()
+// async findAll(@CurrentUser('id') userId: string) { ... }
+```
+
+### Better Auth Service
+```typescript
+// src/auth/auth.service.ts
+import { betterAuth } from 'better-auth';
+import { mongodbAdapter } from 'better-auth/adapters/mongodb';
+import { MongoClient } from 'mongodb';
+
+const client = new MongoClient(process.env.MONGODB_URI!);
+
+export const auth = betterAuth({
+  database: mongodbAdapter(client.db()),
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false // Set true in production
+  },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24 // Update session every 24 hours
+  },
+  user: {
+    additionalFields: {
+      learningStreak: {
+        type: 'number',
+        defaultValue: 0
+      },
+      lastActiveDate: {
+        type: 'string',
+        defaultValue: () => new Date().toISOString().split('T')[0]
+      }
+    }
+  }
+});
+```
+
+### Better Auth Controller
+```typescript
+// src/auth/auth.controller.ts
+import { All, Controller, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { auth } from './auth.service';
+
+@Controller('auth')
+export class AuthController {
+  @All('*')
+  async handleAuth(@Req() req: Request, @Res() res: Response) {
+    // Better Auth handles all /auth/* routes automatically
+    return auth.handler(req, res);
+  }
+}
+```
+
+### Main Application Setup
+```typescript
+// src/main.ts
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // Global prefix for all routes
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['auth/*'] // Better Auth handles /auth/* directly
+  });
+
+  // Enable CORS
+  app.enableCors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true
+  });
+
+  // Global validation pipe (auto-validate DTOs)
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strip props not in DTO
+      forbidNonWhitelisted: true, // Throw error for extra props
+      transform: true, // Auto-transform to DTO instances
+      transformOptions: {
+        enableImplicitConversion: true
+      }
+    })
+  );
+
+  const port = process.env.PORT || 5000;
+  await app.listen(port);
+  console.log(`🚀 Server running on http://localhost:${port}`);
+}
+
+bootstrap();
+```
+
+### Root App Module
+```typescript
+// src/app.module.ts
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './auth/auth.module';
+import { LearningPathsModule } from './modules/learning-paths/learning-paths.module';
+import { ChaptersModule } from './modules/chapters/chapters.module';
+import { AiModule } from './modules/ai/ai.module';
+import { ProgressModule } from './modules/progress/progress.module';
+import { StreaksModule } from './modules/streaks/streaks.module';
+
+@Module({
+  imports: [
+    // Environment configuration
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env'
+    }),
+
+    // MongoDB connection
+    MongooseModule.forRoot(process.env.MONGODB_URI!, {
+      dbName: process.env.DB_NAME || 'skill-tracker'
+    }),
+
+    // Feature modules
+    AuthModule,
+    LearningPathsModule,
+    ChaptersModule,
+    AiModule,
+    ProgressModule,
+    StreaksModule
+  ],
+  controllers: [],
+  providers: []
+})
+export class AppModule {}
+```
+
+### HTTP Exception Filter (Optional)
+```typescript
+// src/common/filters/http-exception.filter.ts
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus
+} from '@nestjs/common';
+import { Response } from 'express';
+
+@Catch()
+export class HttpExceptionFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest();
+
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    const message =
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : 'Internal server error';
+
+    response.status(status).json({
+      error: {
+        statusCode: status,
+        message: typeof message === 'string' ? message : (message as any).message,
+        timestamp: new Date().toISOString(),
+        path: request.url
+      }
+    });
+  }
+}
+
+// Apply globally in main.ts:
+// app.useGlobalFilters(new HttpExceptionFilter());
+```
+
+### Transform Interceptor (Response Formatting)
+```typescript
+// src/common/interceptors/transform.interceptor.ts
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+export interface Response<T> {
+  data: T;
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
+@Injectable()
+export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
+    const request = context.switchToHttp().getRequest();
+
+    return next.handle().pipe(
+      map(data => ({
+        data,
+        meta: {
+          timestamp: new Date().toISOString(),
+          path: request.url
+        }
+      }))
+    );
+  }
+}
+
+// Apply globally in main.ts:
+// app.useGlobalInterceptors(new TransformInterceptor());
 ```
 
 ---
 
 # AI Integration (Simplified)
+
 
 ## Architecture
 
