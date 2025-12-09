@@ -1,21 +1,26 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller.js';
 import { AuthModule } from './auth/auth.module.js';
 import { TestController } from './test/test.controller.js';
+import { LearningPathsModule } from './modules/learning-paths/learning-paths.module.js';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
+            envFilePath: '.env',
         }),
-        // Only connect to MongoDB if MONGO_URI is provided
-        ...(process.env.MONGO_URI
-            ? [MongooseModule.forRoot(process.env.MONGO_URI)]
-            : []
-        ),
+        MongooseModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+                uri: configService.get<string>('MONGODB_URI'),
+            }),
+            inject: [ConfigService],
+        }),
         AuthModule,
+        LearningPathsModule,
     ],
     controllers: [AppController, TestController],
 })
