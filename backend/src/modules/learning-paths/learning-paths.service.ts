@@ -23,10 +23,12 @@ export class LearningPathsService {
     }
 
     async findAll(userId: string) {
-        return this.learningPathModel
+        const learningPaths = await this.learningPathModel
             .find({ userId })
             .sort({ createdAt: -1 })
             .exec();
+
+        return learningPaths;
     }
 
     async findOne(id: string, userId: string) {
@@ -36,9 +38,6 @@ export class LearningPathsService {
             throw new NotFoundException('Learning path not found');
         }
 
-        // Check ownership
-        // Note: userId is stored as ObjectId in schema, but passed as string here.
-        // Mongoose handles casting in queries, but for strict equality check we might need conversion or toString()
         if (learningPath.userId.toString() !== userId) {
             throw new ForbiddenException('Access denied');
         }
