@@ -20,7 +20,7 @@ import { AuthenticatedRequest } from "../../common/interfaces/authenticated-requ
 @Controller("chapters")
 @UseGuards(AuthGuard)
 export class ChaptersController {
-  constructor(private readonly chaptersService: ChaptersService) { }
+  constructor(private readonly chaptersService: ChaptersService) {}
 
   @Post("/in-path/:pathId")
   create(
