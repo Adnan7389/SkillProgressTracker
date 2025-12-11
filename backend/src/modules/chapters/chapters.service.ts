@@ -11,12 +11,14 @@ import { CreateChapterDto } from "./dto/create-chapter.dto.js";
 import { UpdateChapterDto } from "./dto/update-chapter.dto.js";
 import { AddNoteDto } from "./dto/add-note.dto.js";
 import { LearningPathsService } from "../learning-paths/learning-paths.service.js";
+import { StreaksService } from "../streaks/streaks.service.js";
 
 @Injectable()
 export class ChaptersService {
   constructor(
     @InjectModel(Chapter.name) private readonly chapterModel: Model<Chapter>,
     private readonly learningPathsService: LearningPathsService,
+    private readonly streaksService: StreaksService,
   ) {}
 
   async create(
@@ -75,7 +77,9 @@ export class ChaptersService {
     chapter.isCompleted = isCompleted;
     chapter.completionDate = isCompleted ? new Date() : null;
 
-    // In Day 9, we will also update user streak here
+    if (isCompleted) {
+      await this.streaksService.updateUserStreak(userId);
+    }
 
     const savedChapter = await chapter.save();
     await this.updateLearningPathProgress(chapter.learningPathId.toString());
