@@ -17,7 +17,7 @@ export class ChaptersService {
   constructor(
     @InjectModel(Chapter.name) private readonly chapterModel: Model<Chapter>,
     private readonly learningPathsService: LearningPathsService,
-  ) { }
+  ) {}
 
   async create(
     userId: string,
