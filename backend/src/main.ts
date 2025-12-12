@@ -2,8 +2,13 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
 import { ValidationPipe } from "@nestjs/common";
 import cookieParser from "cookie-parser";
+import { mongoClient } from "./auth/auth.service.js";
 
 async function bootstrap() {
+  // Connect to MongoDB first
+  await mongoClient.connect();
+  console.log("✅ MongoDB connected");
+
   const app = await NestFactory.create(AppModule);
 
   app.use(cookieParser());
@@ -27,5 +32,13 @@ async function bootstrap() {
   console.log(
     `🚀 Server running on http://localhost:${process.env.PORT || 5000}`,
   );
+
+  // Graceful shutdown
+  process.on("SIGTERM", async () => {
+    console.log("🔄 SIGTERM received, closing connections...");
+    await mongoClient.close();
+    await app.close();
+    console.log("✅ Application closed gracefully");
+  });
 }
 bootstrap();
