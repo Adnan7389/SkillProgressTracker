@@ -6,6 +6,17 @@ import { mongoClient } from "../../auth/auth.service.js";
 export class StreaksService {
   private readonly logger = new Logger(StreaksService.name);
 
+  /**
+   * Normalize a date to YYYY-MM-DD format
+   * Returns null if date is invalid to prevent crashes
+   */
+  private normalize(date: Date | null | undefined): string | null {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return null;
+    }
+    return date.toISOString().split("T")[0];
+  }
+
   async updateUserStreak(userId: string) {
     try {
       const db = mongoClient.db();
@@ -20,30 +31,30 @@ export class StreaksService {
       }
 
       const today = new Date();
+      const todayStr = this.normalize(today);
+
       const lastActive = user.lastActiveDate
         ? new Date(user.lastActiveDate as string)
         : null;
 
-      // Dates are tricky; normalize them to ignore time of day
-      const todayDateString = today.toISOString().split("T")[0];
-      const lastActiveDateString = lastActive?.toISOString().split("T")[0];
+      const lastStr = this.normalize(lastActive);
 
       // Already updated today, do nothing
-      if (lastActiveDateString === todayDateString) {
+      if (lastStr === todayStr) {
         return;
       }
 
       const yesterday = new Date();
       yesterday.setDate(today.getDate() - 1);
-      const yesterdayDateString = yesterday.toISOString().split("T")[0];
+      const yStr = this.normalize(yesterday);
 
       let newStreak = 1; // Default to 1 for a new activity
-      if (lastActiveDateString === yesterdayDateString) {
+      if (lastStr === yStr) {
         // It's a consecutive day
-        newStreak = ((user.learningStreak as number) || 0) + 1;
+        newStreak = (user.learningStreak ?? 0) + 1;
       }
 
-      this.logger.log(`Updating streak for user ${userId} to ${newStreak}`);
+      this.logger.log(`Updating streak for user ${userId} → ${newStreak}`);
 
       // Update user directly in MongoDB
       await usersCollection.updateOne(
@@ -51,7 +62,7 @@ export class StreaksService {
         {
           $set: {
             learningStreak: newStreak,
-            lastActiveDate: todayDateString,
+            lastActiveDate: todayStr,
           },
         },
       );
