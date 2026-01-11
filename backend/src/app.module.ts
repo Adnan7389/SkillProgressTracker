@@ -6,6 +6,7 @@ import { AuthModule } from "./auth/auth.module.js";
 import { TestController } from "./test/test.controller.js";
 import { LearningPathsModule } from "./modules/learning-paths/learning-paths.module.js";
 import { ChaptersModule } from "./modules/chapters/chapters.module.js";
+import { AiModule } from "./modules/ai/ai.module.js";
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { ChaptersModule } from "./modules/chapters/chapters.module.js";
     AuthModule,
     LearningPathsModule,
     ChaptersModule,
+    AiModule,
   ],
   controllers: [AppController, TestController],
 })
-export class AppModule {}
+export class AppModule { }
