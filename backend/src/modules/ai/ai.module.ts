@@ -4,6 +4,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { AiController } from './ai.controller.js';
 import { AiService } from './ai.service.js';
 import { AiClientService } from './ai-client.service.js';
+import { LearningPathsModule } from '../learning-paths/learning-paths.module.js';
+import { ChaptersModule } from '../chapters/chapters.module.js';
 
 @Module({
     imports: [
@@ -11,6 +13,8 @@ import { AiClientService } from './ai-client.service.js';
         CacheModule.register({
             ttl: 86400,
         }),
+        LearningPathsModule,
+        ChaptersModule,
     ],
     controllers: [AiController],
     providers: [AiService, AiClientService],
