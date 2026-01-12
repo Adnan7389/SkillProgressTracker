@@ -1,29 +1,23 @@
 // src/modules/ai/ai.controller.ts
-// Test endpoint for Day 10 implementation
-import { Controller, Get } from '@nestjs/common';
-import { AiClientService } from './ai-client.service.js';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { AuthGuard } from '../../common/guards/auth.guard.js';
+import { AiService } from './ai.service.js';
+import { GetRecommendationDto } from './dto/get-recommendation.dto.js';
+import { AuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface.js';
 
 @Controller('ai')
+@UseGuards(AuthGuard)
 export class AiController {
-    constructor(private readonly aiClientService: AiClientService) { }
+    constructor(private readonly aiService: AiService) { }
 
-    @Get('test')
-    async testAi() {
-        try {
-            const response = await this.aiClientService.generateText(
-                "Say 'Hello, World!' in a fun way."
-            );
-            return {
-                success: true,
-                message: response,
-                timestamp: new Date().toISOString()
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message,
-                timestamp: new Date().toISOString()
-            };
-        }
+    @Post('recommend')
+    getRecommendation(
+        @Request() req: AuthenticatedRequest,
+        @Body() getRecommendationDto: GetRecommendationDto,
+    ) {
+        return this.aiService.getRecommendation(
+            req.user.id,
+            getRecommendationDto.learningPathId,
+        );
     }
 }
