@@ -2,7 +2,9 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
 import { ValidationPipe } from "@nestjs/common";
 import cookieParser from "cookie-parser";
-import { mongoClient } from "./auth/auth.service.js";
+import { mongoClient, auth } from "./auth/auth.service.js";
+
+import { toNodeHandler } from "better-auth/node";
 
 async function bootstrap() {
   // Connect to MongoDB first
@@ -17,6 +19,9 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL,
     credentials: true,
   });
+
+  // Mount Better Auth handler
+  app.getHttpAdapter().getInstance().use("/api/auth/*", toNodeHandler(auth));
 
   app.useGlobalPipes(
     new ValidationPipe({
