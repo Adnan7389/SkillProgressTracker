@@ -11,6 +11,7 @@ export const mongoClient = client;
 
 export const authOptions = {
   database: mongodbAdapter(client.db()),
+  trustedOrigins: [process.env.FRONTEND_URL!],
 
   emailAndPassword: {
     enabled: true,
@@ -34,7 +35,7 @@ export const authOptions = {
     },
   },
 
-  baseURL: `${process.env.BETTER_AUTH_URL}/api/v1/auth`,
+  baseURL: process.env.BETTER_AUTH_URL!,
   secret: process.env.BETTER_AUTH_SECRET!,
 };
 
