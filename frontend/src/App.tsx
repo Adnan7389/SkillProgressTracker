@@ -5,24 +5,27 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Layout } from 'lucide-react';
+import Notification from './components/ui/Notification';
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-primary/30">
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <Notification />
         {/* Navigation Header */}
-        <nav className="border-b border-slate-800 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-              <Layout className="text-primary w-6 h-6" />
-              <span>SkillTracker</span>
+        <nav className="border-b border-[var(--border)] bg-[var(--background)]/80 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div className="flex items-center gap-3 font-black text-2xl tracking-tighter">
+              <div className="p-2 bg-[var(--primary)] rounded-xl">
+                <Layout className="text-[var(--primary-foreground)] w-6 h-6" />
+              </div>
+              <span>Skill<span className="text-[var(--primary)]">Tracker</span></span>
             </div>
-            {/* Nav links can be added here */}
           </div>
         </nav>
 
         {/* Main Content Area */}
-        <main className="max-w-7xl mx-auto px-4 py-12">
+        <main className="max-w-7xl mx-auto px-4 py-16">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
