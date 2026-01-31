@@ -2,7 +2,7 @@ import { useSession, signOut } from '../lib/auth-client';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Layout, Plus, Loader2, BookCopy, FolderOpen, Target } from 'lucide-react';
 import { useLearningPaths } from '../hooks/useLearningPaths';
-import { useUiStore } from '../store/useUiStore';
+import { useUiStore } from '../store/ui.store';
 import PathCard from '../components/dashboard/PathCard';
 import CreatePathForm from '../components/dashboard/CreatePathForm';
 
