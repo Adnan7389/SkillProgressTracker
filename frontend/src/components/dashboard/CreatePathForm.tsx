@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCreateLearningPath } from '../../hooks/useLearningPaths';
-import { useUiStore } from '../../store/useUiStore';
+import { useUiStore } from '../../store/ui.store';
 import { X, Loader2, Sparkles } from 'lucide-react';
 
 export default function CreatePathForm() {
@@ -76,8 +76,8 @@ export default function CreatePathForm() {
                                         type="button"
                                         onClick={() => setSkillLevel(level)}
                                         className={`py-2 px-3 rounded-lg border font-medium text-sm capitalize transition-all ${skillLevel === level
-                                                ? 'bg-[var(--primary)] border-[var(--primary)] text-[var(--primary-foreground)]'
-                                                : 'bg-[var(--background)] border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--primary)]'
+                                            ? 'bg-[var(--primary)] border-[var(--primary)] text-[var(--primary-foreground)]'
+                                            : 'bg-[var(--background)] border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--primary)]'
                                             }`}
                                     >
                                         {level}
