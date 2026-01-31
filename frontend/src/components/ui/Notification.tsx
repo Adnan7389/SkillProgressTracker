@@ -1,4 +1,4 @@
-import { useUiStore } from '../../store/useUiStore';
+import { useUiStore } from '../../store/ui.store';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Notification() {
