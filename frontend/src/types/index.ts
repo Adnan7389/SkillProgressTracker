@@ -30,3 +30,9 @@ export interface Chapter {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface AiRecommendation {
+    nextChapterTitle: string;
+    reason: string;
+    strategy: 'cache' | 'llm' | 'fallback';
+}
