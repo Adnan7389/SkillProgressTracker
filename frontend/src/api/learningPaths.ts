@@ -10,3 +10,8 @@ export const createLearningPath = async (newPath: Partial<LearningPath>): Promis
     const { data } = await api.post('/learning-paths', newPath);
     return data;
 };
+
+export const getLearningPath = async (id: string): Promise<LearningPath> => {
+    const { data } = await api.get(`/learning-paths/${id}`);
+    return data;
+};
