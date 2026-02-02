@@ -23,7 +23,7 @@ export class StreaksService {
       const usersCollection = db.collection("user");
 
       // Fetch user directly from MongoDB
-      const user = await usersCollection.findOne({ id: userId });
+      const user = await usersCollection.findOne({ _id: userId as any });
 
       if (!user) {
         this.logger.warn(`User not found for streak update: ${userId}`);
@@ -58,7 +58,7 @@ export class StreaksService {
 
       // Update user directly in MongoDB
       await usersCollection.updateOne(
-        { id: userId },
+        { _id: userId as any },
         {
           $set: {
             learningStreak: newStreak,
