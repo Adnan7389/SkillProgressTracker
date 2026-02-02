@@ -9,6 +9,14 @@ export const useLearningPaths = () => {
     });
 };
 
+export const useLearningPath = (id: string) => {
+    return useQuery<LearningPath>({
+        queryKey: ['learning-path', id],
+        queryFn: () => learningPathsApi.getLearningPath(id),
+        enabled: !!id,
+    });
+};
+
 export const useCreateLearningPath = () => {
     const queryClient = useQueryClient();
 
