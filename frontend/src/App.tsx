@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import PathDetails from './pages/PathDetails';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Layout } from 'lucide-react';
 import Notification from './components/ui/Notification';
@@ -35,6 +36,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/path/:id"
+              element={
+                <ProtectedRoute>
+                  <PathDetails />
                 </ProtectedRoute>
               }
             />
