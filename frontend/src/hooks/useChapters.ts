@@ -71,7 +71,7 @@ export const useToggleChapter = (pathId: string) => {
         },
 
         // If the mutation fails, use the context returned from onMutate to roll back
-        onError: (err, newTodo, context) => {
+        onError: (_err, _variables, context) => {
             if (context?.previousChapters) {
                 queryClient.setQueryData(['chapters', pathId], context.previousChapters);
             }
@@ -82,6 +82,17 @@ export const useToggleChapter = (pathId: string) => {
             queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
             queryClient.invalidateQueries({ queryKey: ['learning-paths'] });
             queryClient.invalidateQueries({ queryKey: ['learning-path', pathId] });
+        },
+    });
+};
+
+export const useAddChapterNote = (pathId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ chapterId, text }: { chapterId: string; text: string }) =>
+            chaptersApi.addChapterNote(chapterId, text),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
         },
     });
 };
