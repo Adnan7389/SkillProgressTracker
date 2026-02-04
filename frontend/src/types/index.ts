@@ -19,14 +19,24 @@ export interface LearningPath {
     updatedAt: string;
 }
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
+export interface Note {
+    text: string;
+    createdAt: string;
+}
+
 export interface Chapter {
     _id: string;
     learningPathId: string;
+    userId: string;
     title: string;
-    content?: string;
-    videoUrl?: string;
+    description?: string;
+    difficulty: Difficulty;
+    estimatedMinutes: number;
     isCompleted: boolean;
-    notes?: string;
+    completionDate?: string;
+    notes: Note[];
     createdAt: string;
     updatedAt: string;
 }
