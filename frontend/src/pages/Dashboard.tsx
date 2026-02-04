@@ -1,6 +1,6 @@
 import { useSession, signOut } from '../lib/auth-client';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Layout, Plus, Loader2, BookCopy, FolderOpen, Target } from 'lucide-react';
+import { LogOut, Layout, Plus, Loader2, BookCopy, FolderOpen, Flame } from 'lucide-react';
 import { useLearningPaths } from '../hooks/useLearningPaths';
 import { useUiStore } from '../store/ui.store';
 import PathCard from '../components/dashboard/PathCard';
@@ -56,7 +56,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatsCard icon={BookCopy} label="Overall Progress" value={`${totalProgress}%`} color="text-blue-500" />
                 <StatsCard icon={FolderOpen} label="Total Paths" value={paths?.length.toString() || '0'} color="text-purple-500" />
-                <StatsCard icon={Target} label="Next Milestone" value="Day 14" color="text-orange-500" />
+                <StatsCard icon={Flame} label="Learning Streak" value={`${(session?.user as any)?.learningStreak || 0} days`} color="text-orange-500" />
             </div>
 
             <div>
