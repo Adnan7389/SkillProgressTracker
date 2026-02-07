@@ -5,6 +5,22 @@ import { Cache } from 'cache-manager';
 import { AiClientService } from './ai-client.service.js';
 import { LearningPathsService } from '../learning-paths/learning-paths.service.js';
 import { ChaptersService } from '../chapters/chapters.service.js';
+import { z } from 'zod';
+
+// Define the schema for a single chapter in the roadmap
+const ChapterSchema = z.object({
+    title: z.string().max(200),
+    description: z.string().max(1000).optional(),
+    difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
+    estimatedMinutes: z.number().min(5).max(300).default(30),
+});
+
+// Define the schema for the full roadmap
+const RoadmapSchema = z.object({
+    pathName: z.string().max(100),
+    description: z.string().max(500),
+    chapters: z.array(ChapterSchema).min(1).max(10),
+});
 
 @Injectable()
 export class AiService {
@@ -35,6 +51,81 @@ export class AiService {
             this.logger.error('AI generation failed, using fallback', error.stack);
             const fallback = await this.getFallbackRecommendation(userId, learningPathId);
             return { ...fallback, strategy: 'fallback' };
+        }
+    }
+
+    async generateRoadmap(userId: string, topic: string, skillLevel: string) {
+        this.logger.log(`Generating AI roadmap for topic: ${topic} (${skillLevel})`);
+
+        const prompt = `
+You are an expert curriculum designer. Generate a structured learning path for the topic: "${topic}" at a "${skillLevel}" level.
+The learning path should be logically ordered and suitable for the requested skill level.
+
+Respond ONLY with a JSON object that follows this exact structure:
+{
+  "pathName": "Short descriptive name for the path",
+  "description": "Brief summary of what will be learned",
+  "chapters": [
+    {
+      "title": "Clear chapter title",
+      "description": "What this chapter covers",
+      "difficulty": "easy" | "medium" | "hard",
+      "estimatedMinutes": number (between 15 and 60)
+    }
+  ]
+}
+
+Limit the roadmap to between 3 and 7 chapters.
+`;
+
+        try {
+            const responseText = await this.aiClientService.generateText(prompt);
+            const parsedData = this.parseAndValidateRoadmap(responseText);
+
+            // 1. Create the Learning Path
+            const path = await this.learningPathsService.create(userId, {
+                name: parsedData.pathName,
+                description: parsedData.description,
+                skillLevel: skillLevel as any,
+            });
+
+            // 2. Create the Chapters
+            for (const chapterData of parsedData.chapters) {
+                await this.chaptersService.create(userId, path._id.toString(), {
+                    title: chapterData.title,
+                    description: chapterData.description,
+                    difficulty: chapterData.difficulty as any,
+                    estimatedMinutes: chapterData.estimatedMinutes,
+                });
+            }
+
+            return { pathId: path._id, name: path.name };
+        } catch (error) {
+            this.logger.error(`Roadmap generation failed: ${error.message}`, error.stack);
+            throw new Error(`Failed to generate roadmap: ${error.message}`);
+        }
+    }
+
+    private parseAndValidateRoadmap(responseText: string) {
+        let jsonText = responseText.trim();
+        // Remove markdown blocks if present
+        if (jsonText.startsWith('```json')) {
+            jsonText = jsonText.slice(7);
+        }
+        if (jsonText.startsWith('```')) {
+            jsonText = jsonText.slice(3);
+        }
+        if (jsonText.endsWith('```')) {
+            jsonText = jsonText.slice(0, -3);
+        }
+        jsonText = jsonText.trim();
+
+        try {
+            const rawData = JSON.parse(jsonText);
+            return RoadmapSchema.parse(rawData);
+        } catch (err) {
+            this.logger.error('Invalid AI response structure', err);
+            throw new Error('AI returned an invalid roadmap structure. Please try again.');
         }
     }
 
