@@ -6,3 +6,10 @@ export const useAiRecommendation = () => {
         mutationFn: aiApi.getRecommendation,
     });
 };
+
+export const useGenerateRoadmap = () => {
+    return useMutation({
+        mutationFn: ({ topic, skillLevel }: { topic: string; skillLevel: string }) =>
+            aiApi.generateRoadmap(topic, skillLevel),
+    });
+};
