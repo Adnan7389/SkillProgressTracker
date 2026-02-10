@@ -28,12 +28,12 @@ export class AiClientService {
                 model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
                 generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 2048,
+                    maxOutputTokens: 4096,
                     responseMimeType: "application/json",
                 }
             });
 
-            this.logger.debug(`Calling Gemini API (2.5-flash) for prompt: ${prompt.substring(0, 50)}...`);
+            this.logger.debug(`Calling Gemini API (2.5-flash) with maxTokens=4096 for prompt: ${prompt.substring(0, 50)}...`);
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
