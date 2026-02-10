@@ -19,7 +19,7 @@ export class ChaptersService {
     @InjectModel(Chapter.name) private readonly chapterModel: Model<Chapter>,
     private readonly learningPathsService: LearningPathsService,
     private readonly streaksService: StreaksService,
-  ) {}
+  ) { }
 
   async create(
     userId: string,
@@ -89,6 +89,18 @@ export class ChaptersService {
   async addNote(id: string, userId: string, addNoteDto: AddNoteDto) {
     const chapter = await this.findOne(id, userId);
     chapter.notes.push({ ...addNoteDto, createdAt: new Date() });
+    return chapter.save();
+  }
+
+  async updateResources(
+    id: string,
+    userId: string,
+    resources: Array<{ type: string; title: string; url: string; description: string; priority: number }>,
+    status: 'pending' | 'completed' | 'failed',
+  ) {
+    const chapter = await this.findOne(id, userId);
+    chapter.resources = resources as any;
+    chapter.resourceStatus = status;
     return chapter.save();
   }
 
