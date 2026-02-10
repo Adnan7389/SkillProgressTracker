@@ -12,6 +12,26 @@ export class Note {
 
 export const NoteSchema = SchemaFactory.createForClass(Note);
 
+@Schema({ _id: false })
+export class Resource {
+  @Prop({ required: true, enum: ["doc", "youtube"] })
+  type: string;
+
+  @Prop({ required: true, trim: true, maxlength: 200 })
+  title: string;
+
+  @Prop({ required: true, trim: true, maxlength: 500 })
+  url: string;
+
+  @Prop({ trim: true, maxlength: 300, default: "" })
+  description: string;
+
+  @Prop({ min: 1, max: 6, default: 1 })
+  priority: number;
+}
+
+export const ResourceSchema = SchemaFactory.createForClass(Resource);
+
 @Schema({ timestamps: true })
 export class Chapter extends Document {
   @Prop({ type: Types.ObjectId, ref: "LearningPath", required: true })
@@ -40,6 +60,12 @@ export class Chapter extends Document {
 
   @Prop({ type: [NoteSchema], default: [] })
   notes: Note[];
+
+  @Prop({ type: [ResourceSchema], default: [] })
+  resources: Resource[];
+
+  @Prop({ enum: ["pending", "completed", "failed"], default: "pending" })
+  resourceStatus: string;
 }
 
 export const ChapterSchema = SchemaFactory.createForClass(Chapter);
