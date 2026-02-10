@@ -3,6 +3,7 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { AiClientService } from './ai-client.service.js';
+import { ResourceDiscoveryService } from './resource-discovery.service.js';
 import { LearningPathsService } from '../learning-paths/learning-paths.service.js';
 import { ChaptersService } from '../chapters/chapters.service.js';
 import { z } from 'zod';
@@ -29,6 +30,7 @@ export class AiService {
     constructor(
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly aiClientService: AiClientService,
+        private readonly resourceDiscoveryService: ResourceDiscoveryService,
         private readonly learningPathsService: LearningPathsService,
         private readonly chaptersService: ChaptersService,
     ) { }
@@ -89,15 +91,22 @@ Limit the roadmap to between 3 and 7 chapters.
                 skillLevel: skillLevel as any,
             });
 
-            // 2. Create the Chapters
+            // 2. Create the Chapters and collect their IDs
+            const createdChapters: Array<{ id: string; title: string }> = [];
             for (const chapterData of parsedData.chapters) {
-                await this.chaptersService.create(userId, path._id.toString(), {
+                const chapter = await this.chaptersService.create(userId, path._id.toString(), {
                     title: chapterData.title,
                     description: chapterData.description,
                     difficulty: chapterData.difficulty as any,
                     estimatedMinutes: chapterData.estimatedMinutes,
                 });
+                createdChapters.push({ id: chapter._id.toString(), title: chapter.title });
             }
+
+            // 3. Fire-and-forget: discover resources for all chapters asynchronously
+            this.resourceDiscoveryService
+                .discoverForChapters(createdChapters, userId, parsedData.pathName, skillLevel)
+                .catch(err => this.logger.error('Background resource discovery failed', err.stack));
 
             return { pathId: path._id, name: path.name };
         } catch (error) {
