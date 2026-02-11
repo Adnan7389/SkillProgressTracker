@@ -96,3 +96,30 @@ export const useAddChapterNote = (pathId: string) => {
         },
     });
 };
+
+export const useDiscoverResources = (pathId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (chapterId: string) => chaptersApi.discoverResources(chapterId),
+        onSuccess: () => {
+            // Poll for updates after a short delay (resources are discovered async)
+            setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
+            }, 3000);
+        },
+    });
+};
+
+export const useRefreshResources = (pathId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (chapterId: string) => chaptersApi.refreshResources(chapterId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
+            // Poll again after delay for async completion
+            setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
+            }, 5000);
+        },
+    });
+};
