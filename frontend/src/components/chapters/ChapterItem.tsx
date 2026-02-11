@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useToggleChapter, useUpdateChapter, useDeleteChapter, useAddChapterNote } from '../../hooks/useChapters';
+import { useToggleChapter, useUpdateChapter, useDeleteChapter, useAddChapterNote, useDiscoverResources, useRefreshResources } from '../../hooks/useChapters';
 import type { Chapter } from '../../types';
-import { Check, Edit2, Trash2, X, Save, ChevronDown, ChevronUp, Clock, StickyNote, Send } from 'lucide-react';
+import { Check, Edit2, Trash2, X, Save, ChevronDown, ChevronUp, Clock, StickyNote, Send, BookOpen } from 'lucide-react';
+import ResourceList from './ResourceList';
 
 interface ChapterItemProps {
     chapter: Chapter;
@@ -23,6 +24,8 @@ export default function ChapterItem({ chapter }: ChapterItemProps) {
     const { mutate: updateChapter, isPending: isUpdating } = useUpdateChapter(chapter.learningPathId);
     const { mutate: deleteChapter, isPending: isDeleting } = useDeleteChapter(chapter.learningPathId);
     const { mutate: addNote, isPending: isAddingNote } = useAddChapterNote(chapter.learningPathId);
+    const { mutate: discoverResources, isPending: isDiscovering } = useDiscoverResources(chapter.learningPathId);
+    const { mutate: refreshResourcesMut, isPending: isRefreshing } = useRefreshResources(chapter.learningPathId);
 
     const handleToggle = () => {
         toggleChapter({ id: chapter._id, isCompleted: !chapter.isCompleted });
@@ -117,6 +120,12 @@ export default function ChapterItem({ chapter }: ChapterItemProps) {
                                     {chapter.notes.length}
                                 </span>
                             )}
+                            {chapter.resources?.length > 0 && (
+                                <span className="text-xs text-[var(--muted-foreground)] flex items-center gap-1">
+                                    <BookOpen className="w-3 h-3" />
+                                    {chapter.resources.length}
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -153,6 +162,14 @@ export default function ChapterItem({ chapter }: ChapterItemProps) {
                     {chapter.description && (
                         <p className="text-sm text-[var(--muted-foreground)] mt-3 mb-4">{chapter.description}</p>
                     )}
+
+                    <ResourceList
+                        resources={chapter.resources || []}
+                        resourceStatus={chapter.resourceStatus || 'pending'}
+                        onDiscover={() => discoverResources(chapter._id)}
+                        onRefresh={() => refreshResourcesMut(chapter._id)}
+                        isDiscovering={isDiscovering || isRefreshing}
+                    />
 
                     <div className="mt-3">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">Notes</h4>
