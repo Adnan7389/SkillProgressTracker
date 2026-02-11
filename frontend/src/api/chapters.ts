@@ -39,3 +39,13 @@ export const addChapterNote = async (chapterId: string, text: string): Promise<C
     const { data } = await api.post(`/chapters/${chapterId}/notes`, { text });
     return data;
 };
+
+export const discoverResources = async (chapterId: string): Promise<{ message: string; chapterId: string }> => {
+    const { data } = await api.post(`/ai/discover-resources/${chapterId}`);
+    return data;
+};
+
+export const refreshResources = async (chapterId: string): Promise<{ message: string; chapterId: string }> => {
+    const { data } = await api.post(`/ai/refresh-resources/${chapterId}`);
+    return data;
+};
