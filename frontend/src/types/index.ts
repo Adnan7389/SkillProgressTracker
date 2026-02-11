@@ -26,6 +26,16 @@ export interface Note {
     createdAt: string;
 }
 
+export interface Resource {
+    type: 'doc' | 'youtube';
+    title: string;
+    url: string;
+    description: string;
+    priority: number;
+}
+
+export type ResourceStatus = 'pending' | 'completed' | 'failed';
+
 export interface Chapter {
     _id: string;
     learningPathId: string;
@@ -37,6 +47,8 @@ export interface Chapter {
     isCompleted: boolean;
     completionDate?: string;
     notes: Note[];
+    resources: Resource[];
+    resourceStatus: ResourceStatus;
     createdAt: string;
     updatedAt: string;
 }
@@ -46,3 +58,4 @@ export interface AiRecommendation {
     reason: string;
     strategy: 'cache' | 'llm' | 'fallback';
 }
+
