@@ -30,7 +30,7 @@ export default function Register() {
                     setError(ctx.error.message || 'Registration failed');
                 }
             });
-        } catch (err) {
+        } catch {
             setError('An unexpected error occurred');
         } finally {
             setLoading(false);
