@@ -67,7 +67,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatsCard icon={BookCopy} label="Overall Progress" value={`${totalProgress}%`} color="text-blue-500" />
                 <StatsCard icon={FolderOpen} label="Total Paths" value={paths?.length.toString() || '0'} color="text-purple-500" />
-                <StatsCard icon={Flame} label="Learning Streak" value={`${(session?.user as any)?.learningStreak || 0} days`} color="text-orange-500" />
+                <StatsCard icon={Flame} label="Learning Streak" value={`${(session?.user as { learningStreak?: number })?.learningStreak || 0} days`} color="text-orange-500" />
             </div>
 
             <div>
@@ -124,7 +124,7 @@ export default function Dashboard() {
     );
 }
 
-function StatsCard({ icon: Icon, label, value, color }: { icon: any, label: string, value: string, color: string }) {
+function StatsCard({ icon: Icon, label, value, color }: { icon: React.ElementType, label: string, value: string, color: string }) {
     return (
         <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex items-center gap-5 hover:border-[var(--primary)] transition-colors group">
             <div className={`p-4 bg-[var(--background)] rounded-2xl group-hover:scale-110 transition-transform duration-300`}>
