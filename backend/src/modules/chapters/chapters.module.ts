@@ -16,4 +16,4 @@ import { StreaksModule } from "../streaks/streaks.module.js";
   providers: [ChaptersService],
   exports: [ChaptersService],
 })
-export class ChaptersModule { }
+export class ChaptersModule {}
