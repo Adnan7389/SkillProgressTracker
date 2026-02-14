@@ -28,7 +28,7 @@ export default function Login() {
                     setError(ctx.error.message || 'Login failed');
                 }
             });
-        } catch (err) {
+        } catch {
             setError('An unexpected error occurred');
         } finally {
             setLoading(false);
