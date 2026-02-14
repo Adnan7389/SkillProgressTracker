@@ -1,11 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { StreaksService } from './streaks.service';
-import { auth } from '../../auth/auth.service';
-import { Logger } from '@nestjs/common';
+import { Test, TestingModule } from "@nestjs/testing";
+import { StreaksService } from "./streaks.service";
+import { auth } from "../../auth/auth.service";
+import { Logger } from "@nestjs/common";
 
-jest.mock('../../auth/auth.service');
+jest.mock("../../auth/auth.service");
 
-describe('StreaksService', () => {
+describe("StreaksService", () => {
   let service: StreaksService;
 
   beforeEach(async () => {
@@ -16,7 +16,7 @@ describe('StreaksService', () => {
     service = module.get<StreaksService>(StreaksService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     console.log(auth);
     expect(service).toBeDefined();
   });
