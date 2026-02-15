@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useCreateLearningPath } from '../../hooks/useLearningPaths';
 import { useUiStore } from '../../store/ui.store';
 import { X, Loader2, Sparkles } from 'lucide-react';
+import type { SkillLevel } from '../../types';
+import { AxiosError } from 'axios';
 
 export default function CreatePathForm() {
     const [name, setName] = useState('');
@@ -13,15 +15,16 @@ export default function CreatePathForm() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createPath({ name, description, skillLevel: skillLevel as any }, {
+        createPath({ name, description, skillLevel: skillLevel as SkillLevel }, {
             onSuccess: () => {
                 setNotification({ message: 'Learning path created successfully!', type: 'success' });
                 setCreateModalOpen(false);
                 setName('');
                 setDescription('');
             },
-            onError: (error: any) => {
-                setNotification({ message: error.response?.data?.message || 'Failed to create path', type: 'error' });
+            onError: (error: unknown) => {
+                const axiosError = error as AxiosError<{ message?: string }>;
+                setNotification({ message: axiosError.response?.data?.message || 'Failed to create path', type: 'error' });
             }
         });
     };
