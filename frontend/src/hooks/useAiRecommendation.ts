@@ -1,8 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
 import * as aiApi from '../api/ai';
+import type { AiRecommendation } from '../types';
 
 export const useAiRecommendation = () => {
-    return useMutation({
+    return useMutation<AiRecommendation, Error, string>({
         mutationFn: aiApi.getRecommendation,
     });
 };
