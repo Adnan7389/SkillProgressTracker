@@ -7,6 +7,7 @@ import { TestController } from "./test/test.controller.js";
 import { LearningPathsModule } from "./modules/learning-paths/learning-paths.module.js";
 import { ChaptersModule } from "./modules/chapters/chapters.module.js";
 import { AiModule } from "./modules/ai/ai.module.js";
+import { AssessmentsModule } from "./modules/assessments/assessments.module.js";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AiModule } from "./modules/ai/ai.module.js";
     LearningPathsModule,
     ChaptersModule,
     AiModule,
+    AssessmentsModule,
   ],
   controllers: [AppController, TestController],
 })
