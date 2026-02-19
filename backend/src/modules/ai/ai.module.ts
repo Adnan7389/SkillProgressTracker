@@ -19,6 +19,6 @@ import { ChaptersModule } from "../chapters/chapters.module.js";
   ],
   controllers: [AiController],
   providers: [AiService, AiClientService, ResourceDiscoveryService],
-  exports: [AiService, ResourceDiscoveryService],
+  exports: [AiService, ResourceDiscoveryService, AiClientService],
 })
-export class AiModule {}
+export class AiModule { }
