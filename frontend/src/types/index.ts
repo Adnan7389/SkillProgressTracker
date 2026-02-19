@@ -59,3 +59,40 @@ export interface AiRecommendation {
     strategy: 'cache' | 'llm' | 'fallback';
 }
 
+export interface Question {
+    question: string;
+    options: string[];
+    answer: number;
+    explanation: string;
+}
+
+export interface Assessment {
+    _id: string;
+    chapterId: string;
+    questions: Question[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface QuizAttempt {
+    _id: string;
+    userId: string;
+    assessmentId: string;
+    chapterId: string;
+    answers: number[];
+    score: number;
+    createdAt: string;
+}
+
+export interface AssessmentResult {
+    score: number;
+    totalQuestions: number;
+    correctAnswers: number;
+    feedback: {
+        questionNumber: number;
+        isCorrect: boolean;
+        correctOption: number;
+        explanation: string;
+    }[];
+}
+
