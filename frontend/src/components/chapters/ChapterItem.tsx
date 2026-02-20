@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useToggleChapter, useUpdateChapter, useDeleteChapter, useAddChapterNote, useDiscoverResources, useRefreshResources } from '../../hooks/useChapters';
 import type { Chapter } from '../../types';
-import { Check, Edit2, Trash2, X, Save, ChevronDown, ChevronUp, Clock, StickyNote, Send, BookOpen } from 'lucide-react';
+import { Check, Edit2, Trash2, X, Save, ChevronDown, ChevronUp, Clock, StickyNote, Send, BookOpen, BrainCircuit } from 'lucide-react';
 import ResourceList from './ResourceList';
+import AssessmentModal from '../assessments/AssessmentModal';
 
 interface ChapterItemProps {
     chapter: Chapter;
@@ -19,6 +20,7 @@ export default function ChapterItem({ chapter }: ChapterItemProps) {
     const [editTitle, setEditTitle] = useState(chapter.title);
     const [isExpanded, setIsExpanded] = useState(false);
     const [newNote, setNewNote] = useState('');
+    const [isQuizOpen, setIsQuizOpen] = useState(false);
 
     const { mutate: toggleChapter } = useToggleChapter(chapter.learningPathId);
     const { mutate: updateChapter, isPending: isUpdating } = useUpdateChapter(chapter.learningPathId);
@@ -204,7 +206,31 @@ export default function ChapterItem({ chapter }: ChapterItemProps) {
                             </button>
                         </form>
                     </div>
+
+                    {chapter.isCompleted && (
+                        <div className="mt-6 border-t border-[var(--border)] pt-4 flex items-center justify-between bg-[var(--muted)]/20 p-4 rounded-xl">
+                            <div>
+                                <h4 className="font-bold">Test your knowledge</h4>
+                                <p className="text-sm text-[var(--muted-foreground)]">Generate an AI-powered quiz to verify understanding.</p>
+                            </div>
+                            <button
+                                onClick={() => setIsQuizOpen(true)}
+                                className="btn-primary py-2 px-6 font-bold flex items-center gap-2"
+                            >
+                                <BrainCircuit className="w-4 h-4" />
+                                Take Quiz
+                            </button>
+                        </div>
+                    )}
                 </div>
+            )}
+
+            {isQuizOpen && (
+                <AssessmentModal
+                    chapterId={chapter._id}
+                    chapterTitle={chapter.title}
+                    onClose={() => setIsQuizOpen(false)}
+                />
             )}
         </div>
     );
