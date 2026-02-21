@@ -22,6 +22,7 @@ SkillProgressTracker is designed for lifelong learners who want to streamline th
 1.  **Generate a Logical Roadmap**: Creates a structured sequence of chapters.
 2.  **Discover Resources**: Automatically finds official documentation and high-quality YouTube videos for each chapter.
 3.  **Track Progress**: Monitor completion status and maintain learning streaks to stay motivated.
+4.  **AI Assessments**: Test your knowledge with dynamically generated quizzes for every chapter.
 
 **Target Users**: Self-taught developers, students, and professionals looking to upskill efficiently.
 
@@ -36,6 +37,11 @@ SkillProgressTracker is designed for lifelong learners who want to streamline th
 ### 📚 Resource Discovery
 - **Multi-Source Curation**: Automatically attaches 3-5 curated resources (official MDN/docs and YouTube tutorials) to every chapter.
 - **Asynchronous Discovery**: Resources are fetched in the background using parallel processing.
+
+### 📝 AI-Powered Assessments
+- **Dynamic Quiz Generation**: Automatically generates 3-5 multiple-choice questions (MCQs) per chapter using Gemini.
+- **Instant Scoring & Feedback**: Get immediate results with AI-generated explanations for every answer.
+- **Knowledge Verification**: Ensures active learning and conceptual mastery before moving to the next topic.
 
 ### 📈 Progress & Gamification
 - **Visual Progress**: Real-time progress bars for each learning path.
@@ -176,13 +182,20 @@ SkillProgressTracker/
 - `PATCH /api/v1/chapters/:id/complete`: Mark a chapter as finished.
 - `POST /api/v1/chapters/:id/notes`: Save a note for a chapter.
 
+### Assessments (Quizzes)
+- `POST /api/v1/assessments/generate`: Generate a new quiz for a chapter.
+- `POST /api/v1/assessments/submit`: Submit answers and get a score/feedback.
+- `GET /api/v1/assessments/history/:chapterId`: View past quiz attempts for a chapter.
+
 ---
 
 ## 📖 Usage Guide
 1.  **Dashboard**: Upon logging in, view your current learning paths and daily streak.
 2.  **Generate Path**: Click "Create New Path", enter a topic, select your level, and let the AI generate a roadmap for you.
 3.  **Study**: Click on a chapter to see curated documentation and videos.
-4.  **Track**: Mark chapters as completed to see your progress bar move. Maintain your streak by completing at least one chapter every 24 hours.
+4.  **Track**: Mark chapters as completed to see your progress bar move.
+5.  **Assess**: Take an AI-generated quiz after completing a chapter to verify your understanding. Use the feedback to review concepts you missed.
+6.  **Maintain**: Keep your streak alive by completing at least one chapter every 24 hours.
 
 ---
 
