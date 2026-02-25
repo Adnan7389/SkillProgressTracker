@@ -3,6 +3,7 @@ import { useToggleChapter, useUpdateChapter, useDeleteChapter, useAddChapterNote
 import type { Chapter } from '../../types';
 import { Check, Edit2, Trash2, X, Save, ChevronDown, ChevronUp, Clock, StickyNote, Send, BookOpen, BrainCircuit } from 'lucide-react';
 import ResourceList from './ResourceList';
+import ChallengePanel from './ChallengePanel';
 import AssessmentModal from '../assessments/AssessmentModal';
 
 interface ChapterItemProps {
@@ -172,6 +173,8 @@ export default function ChapterItem({ chapter }: ChapterItemProps) {
                         onRefresh={() => refreshResourcesMut(chapter._id)}
                         isDiscovering={isDiscovering || isRefreshing}
                     />
+
+                    <ChallengePanel chapterId={chapter._id} />
 
                     <div className="mt-3">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">Notes</h4>
