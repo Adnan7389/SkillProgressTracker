@@ -53,6 +53,20 @@ export interface Chapter {
     updatedAt: string;
 }
 
+export interface Challenge {
+    _id: string;
+    chapterId: string;
+    userId: string;
+    task: string;
+    objective: string;
+    difficulty: Difficulty;
+    estimatedMinutes: number;
+    hint?: string;
+    userResponse: string;
+    isCompleted: boolean;
+    createdAt: string;
+}
+
 export interface AiRecommendation {
     nextChapterTitle: string;
     reason: string;
