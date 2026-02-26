@@ -9,6 +9,7 @@ import { ChaptersModule } from "./modules/chapters/chapters.module.js";
 import { AiModule } from "./modules/ai/ai.module.js";
 import { AssessmentsModule } from "./modules/assessments/assessments.module.js";
 import { ChallengesModule } from "./modules/challenges/challenges.module.js";
+import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ChallengesModule } from "./modules/challenges/challenges.module.js";
     AiModule,
     AssessmentsModule,
     ChallengesModule,
+    DashboardModule,
   ],
   controllers: [AppController, TestController],
 })
