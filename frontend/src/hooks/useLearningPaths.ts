@@ -25,6 +25,7 @@ export const useCreateLearningPath = () => {
         onSuccess: () => {
             // Invalidate the cache to trigger a re-fetch of the list
             queryClient.invalidateQueries({ queryKey: ['learning-paths'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
         },
     });
 };
