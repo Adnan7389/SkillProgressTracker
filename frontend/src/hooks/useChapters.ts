@@ -17,6 +17,7 @@ export const useCreateChapter = (pathId: string) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
             queryClient.invalidateQueries({ queryKey: ['learning-paths'] }); // Update path card counts
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
         },
     });
 };
@@ -39,6 +40,7 @@ export const useDeleteChapter = (pathId: string) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
             queryClient.invalidateQueries({ queryKey: ['learning-paths'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
         },
     });
 };
@@ -82,6 +84,7 @@ export const useToggleChapter = (pathId: string) => {
             queryClient.invalidateQueries({ queryKey: ['chapters', pathId] });
             queryClient.invalidateQueries({ queryKey: ['learning-paths'] });
             queryClient.invalidateQueries({ queryKey: ['learning-path', pathId] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
         },
     });
 };
