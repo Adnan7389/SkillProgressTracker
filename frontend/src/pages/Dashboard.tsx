@@ -1,16 +1,19 @@
 import { useSession, signOut } from '../lib/auth-client';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Layout, Plus, Loader2, BookCopy, FolderOpen, Flame, Sparkles } from 'lucide-react';
+import { LogOut, Layout, Plus, Loader2, Sparkles } from 'lucide-react';
 import { useLearningPaths } from '../hooks/useLearningPaths';
+import { useDashboardStats } from '../hooks/useDashboardStats';
 import { useUiStore } from '../store/ui.store';
 import PathCard from '../components/dashboard/PathCard';
 import CreatePathForm from '../components/dashboard/CreatePathForm';
 import AiPathGenerator from '../components/dashboard/AiPathGenerator';
+import StatsOverview from '../components/dashboard/StatsOverview';
 import { useState } from 'react';
 
 export default function Dashboard() {
     const { data: session } = useSession();
-    const { data: paths, isLoading } = useLearningPaths();
+    const { data: paths, isLoading: isPathsLoading } = useLearningPaths();
+    const { data: stats, isLoading: isStatsLoading } = useDashboardStats();
     const { isCreateModalOpen, setCreateModalOpen } = useUiStore();
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const navigate = useNavigate();
@@ -19,10 +22,6 @@ export default function Dashboard() {
         await signOut();
         navigate('/login');
     };
-
-    const totalProgress = paths?.length
-        ? Math.round(paths.reduce((acc, p) => acc + p.progress, 0) / paths.length)
-        : 0;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -64,11 +63,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <StatsCard icon={BookCopy} label="Overall Progress" value={`${totalProgress}%`} color="text-blue-500" />
-                <StatsCard icon={FolderOpen} label="Total Paths" value={paths?.length.toString() || '0'} color="text-purple-500" />
-                <StatsCard icon={Flame} label="Learning Streak" value={`${(session?.user as { learningStreak?: number })?.learningStreak || 0} days`} color="text-orange-500" />
-            </div>
+            <StatsOverview stats={stats} isLoading={isStatsLoading} />
 
             <div>
                 <div className="flex items-center justify-between mb-6">
@@ -81,7 +76,7 @@ export default function Dashboard() {
                     </span>
                 </div>
 
-                {isLoading ? (
+                {isPathsLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                         <Loader2 className="w-12 h-12 text-[var(--primary)] animate-spin" />
                         <p className="text-[var(--muted-foreground)] font-medium">Fetching your learning paths...</p>
@@ -119,20 +114,6 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
-            </div>
-        </div>
-    );
-}
-
-function StatsCard({ icon: Icon, label, value, color }: { icon: React.ElementType, label: string, value: string, color: string }) {
-    return (
-        <div className="p-6 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex items-center gap-5 hover:border-[var(--primary)] transition-colors group">
-            <div className={`p-4 bg-[var(--background)] rounded-2xl group-hover:scale-110 transition-transform duration-300`}>
-                <Icon className={`w-7 h-7 ${color}`} />
-            </div>
-            <div>
-                <div className="text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-widest mb-1">{label}</div>
-                <div className="text-3xl font-black">{value}</div>
             </div>
         </div>
     );
