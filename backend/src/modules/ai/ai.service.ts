@@ -13,7 +13,7 @@ const ChapterSchema = z.object({
   title: z.string().max(200),
   description: z.string().max(1000).optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).default("medium"),
-  estimatedMinutes: z.number().min(5).max(300).default(30),
+  estimatedMinutes: z.number().min(30).max(240).default(60),
 });
 
 // Define the schema for the full roadmap
@@ -74,6 +74,13 @@ export class AiService {
 You are an expert curriculum designer. Generate a structured learning path for the topic: "${topic}" at a "${skillLevel}" level.
 The learning path should be logically ordered and suitable for the requested skill level.
 
+Time estimation rules:
+- Base your estimatedMinutes on real-world study time, including reading, practice, and review.
+- Beginner chapters: 30–90 minutes (foundational concepts with guided examples).
+- Intermediate chapters: 60–150 minutes (applied practice, deeper theory).
+- Advanced chapters: 90–240 minutes (complex projects, research, or architecture-level thinking).
+- Do NOT underestimate. A chapter on "React State Management" should be at least 90 minutes, not 15.
+
 Respond ONLY with a JSON object that follows this exact structure:
 {
   "pathName": "Short descriptive name for the path",
@@ -83,7 +90,7 @@ Respond ONLY with a JSON object that follows this exact structure:
       "title": "Clear chapter title",
       "description": "What this chapter covers",
       "difficulty": "easy" | "medium" | "hard",
-      "estimatedMinutes": number (between 15 and 60)
+      "estimatedMinutes": number (between 30 and 240, be realistic)
     }
   ]
 }
