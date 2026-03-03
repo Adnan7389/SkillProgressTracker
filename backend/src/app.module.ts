@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
+import { BullModule } from "@nestjs/bullmq";
 import { AppController } from "./app.controller.js";
 import { AuthModule } from "./auth/auth.module.js";
 import { TestController } from "./test/test.controller.js";
@@ -24,6 +25,16 @@ import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
       }),
       inject: [ConfigService],
     }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>("REDIS_HOST", "localhost"),
+          port: configService.get<number>("REDIS_PORT", 6379),
+        },
+      }),
+      inject: [ConfigService],
+    }),
     AuthModule,
     LearningPathsModule,
     ChaptersModule,
@@ -35,3 +46,4 @@ import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
   controllers: [AppController, TestController],
 })
 export class AppModule { }
+
