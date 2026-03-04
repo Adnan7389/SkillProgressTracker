@@ -15,6 +15,11 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  });
+
   app.use(cookieParser());
 
   // Security: HTTP header protection
@@ -37,16 +42,12 @@ async function bootstrap() {
     rateLimit({
       windowMs: 15 * 60 * 1000,
       max: 5,
+      skip: (req) => req.originalUrl.includes("/job-status"),
       standardHeaders: true,
       legacyHeaders: false,
       message: { message: "AI rate limit exceeded. Please wait before generating again.", statusCode: 429 },
     }),
   );
-
-  app.enableCors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-  });
 
   // Mount Better Auth handler
   app.getHttpAdapter().getInstance().use("/api/auth/*", toNodeHandler(auth));
