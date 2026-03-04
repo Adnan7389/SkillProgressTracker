@@ -2,26 +2,13 @@
 import { Injectable, Inject, Logger } from "@nestjs/common";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Cache } from "cache-manager";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
 import { AiClientService } from "./ai-client.service.js";
 import { ResourceDiscoveryService } from "./resource-discovery.service.js";
 import { LearningPathsService } from "../learning-paths/learning-paths.service.js";
 import { ChaptersService } from "../chapters/chapters.service.js";
 import { z } from "zod";
-
-// Define the schema for a single chapter in the roadmap
-const ChapterSchema = z.object({
-  title: z.string().max(200),
-  description: z.string().max(1000).optional(),
-  difficulty: z.enum(["easy", "medium", "hard"]).default("medium"),
-  estimatedMinutes: z.number().min(30).max(240).default(60),
-});
-
-// Define the schema for the full roadmap
-const RoadmapSchema = z.object({
-  pathName: z.string().max(100),
-  description: z.string().max(500),
-  chapters: z.array(ChapterSchema).min(1).max(10),
-});
 
 @Injectable()
 export class AiService {
@@ -29,6 +16,7 @@ export class AiService {
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectQueue("roadmap-generation") private roadmapQueue: Queue,
     private readonly aiClientService: AiClientService,
     private readonly resourceDiscoveryService: ResourceDiscoveryService,
     private readonly learningPathsService: LearningPathsService,
@@ -66,113 +54,31 @@ export class AiService {
   }
 
   async generateRoadmap(userId: string, topic: string, skillLevel: string) {
-    this.logger.log(
-      `Generating AI roadmap for topic: ${topic} (${skillLevel})`,
-    );
-
-    const prompt = `
-You are an expert curriculum designer. Generate a structured learning path for the topic: "${topic}" at a "${skillLevel}" level.
-The learning path should be logically ordered and suitable for the requested skill level.
-
-Time estimation rules:
-- Base your estimatedMinutes on real-world study time, including reading, practice, and review.
-- Beginner chapters: 30–90 minutes (foundational concepts with guided examples).
-- Intermediate chapters: 60–150 minutes (applied practice, deeper theory).
-- Advanced chapters: 90–240 minutes (complex projects, research, or architecture-level thinking).
-- Do NOT underestimate. A chapter on "React State Management" should be at least 90 minutes, not 15.
-
-Respond ONLY with a JSON object that follows this exact structure:
-{
-  "pathName": "Short descriptive name for the path",
-  "description": "Brief summary of what will be learned",
-  "chapters": [
-    {
-      "title": "Clear chapter title",
-      "description": "What this chapter covers",
-      "difficulty": "easy" | "medium" | "hard",
-      "estimatedMinutes": number (between 30 and 240, be realistic)
-    }
-  ]
-}
-
-Limit the roadmap to between 3 and 7 chapters.
-`;
-
-    try {
-      const responseText = await this.aiClientService.generateText(prompt);
-      const parsedData = this.parseAndValidateRoadmap(responseText);
-
-      // 1. Create the Learning Path
-      const path = await this.learningPathsService.create(userId, {
-        name: parsedData.pathName,
-        description: parsedData.description,
-        skillLevel: skillLevel as any,
-      });
-
-      // 2. Create the Chapters and collect their IDs
-      const createdChapters: Array<{ id: string; title: string }> = [];
-      for (const chapterData of parsedData.chapters) {
-        const chapter = await this.chaptersService.create(
-          userId,
-          path._id.toString(),
-          {
-            title: chapterData.title,
-            description: chapterData.description,
-            difficulty: chapterData.difficulty as any,
-            estimatedMinutes: chapterData.estimatedMinutes,
-          },
-        );
-        createdChapters.push({
-          id: chapter._id.toString(),
-          title: chapter.title,
-        });
-      }
-
-      // 3. Fire-and-forget: discover resources for all chapters asynchronously
-      this.resourceDiscoveryService
-        .discoverForChapters(
-          createdChapters,
-          userId,
-          parsedData.pathName,
-          skillLevel,
-        )
-        .catch((err) =>
-          this.logger.error("Background resource discovery failed", err.stack),
-        );
-
-      return { pathId: path._id, name: path.name };
-    } catch (error) {
-      this.logger.error(
-        `Roadmap generation failed: ${error.message}`,
-        error.stack,
-      );
-      throw new Error(`Failed to generate roadmap: ${error.message}`);
-    }
+    this.logger.log(`Queueing roadmap generation for topic: ${topic} (${skillLevel})`);
+    
+    const job = await this.roadmapQueue.add("generate", { userId, topic, skillLevel }, {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 2000,
+      },
+    });
+    return { jobId: job.id };
   }
 
-  private parseAndValidateRoadmap(responseText: string) {
-    let jsonText = responseText.trim();
-    // Remove markdown blocks if present
-    if (jsonText.startsWith("```json")) {
-      jsonText = jsonText.slice(7);
+  async getJobStatus(jobId: string) {
+    const job = await this.roadmapQueue.getJob(jobId);
+    if (!job) {
+      throw new Error("Job not found");
     }
-    if (jsonText.startsWith("```")) {
-      jsonText = jsonText.slice(3);
-    }
-    if (jsonText.endsWith("```")) {
-      jsonText = jsonText.slice(0, -3);
-    }
-    jsonText = jsonText.trim();
 
-    try {
-      const rawData = JSON.parse(jsonText);
-      return RoadmapSchema.parse(rawData);
-    } catch (err) {
-      this.logger.error("Invalid AI response structure", err);
-      throw new Error(
-        "AI returned an invalid roadmap structure. Please try again.",
-      );
-    }
+    const state = await job.getState();
+    return {
+      status: state, // 'waiting', 'active', 'completed', 'failed'
+      progress: job.progress,
+      result: state === "completed" ? job.returnvalue : null,
+      error: state === "failed" ? job.failedReason : null,
+    };
   }
 
   private async generateNewRecommendation(
