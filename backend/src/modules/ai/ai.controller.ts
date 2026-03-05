@@ -2,6 +2,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   Param,
   UseGuards,
@@ -47,6 +48,11 @@ export class AiController {
       generateRoadmapDto.topic,
       generateRoadmapDto.skillLevel,
     );
+  }
+
+  @Get("job-status/:jobId")
+  getJobStatus(@Param("jobId") jobId: string) {
+    return this.aiService.getJobStatus(jobId);
   }
 
   @Post("discover-resources/:chapterId")
