@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, X, Loader2, Wand2, BookOpen, AlertCircle } from 'lucide-react';
-import { useGenerateRoadmap } from '../../hooks/useAiRecommendation';
+import { useGenerateRoadmap, useJobStatus } from '../../hooks/useAiRecommendation';
 import type { SkillLevel } from '../../types';
 
 interface AiPathGeneratorProps {
@@ -11,20 +11,37 @@ interface AiPathGeneratorProps {
 export default function AiPathGenerator({ onClose }: AiPathGeneratorProps) {
     const [topic, setTopic] = useState('');
     const [skillLevel, setSkillLevel] = useState<SkillLevel>('beginner');
-    const { mutate: generateRoadmap, isPending, error } = useGenerateRoadmap();
+    const [jobId, setJobId] = useState<string | null>(null);
+    const [localError, setLocalError] = useState<string | null>(null);
+
+    const { mutate: generateRoadmap, isPending, error: mutationError } = useGenerateRoadmap();
+    const { data: jobStatus } = useJobStatus(jobId);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (jobStatus?.status === 'completed' && jobStatus.result) {
+            onClose();
+            navigate(`/path/${jobStatus.result.pathId}`);
+        } else if (jobStatus?.status === 'failed') {
+            setLocalError(jobStatus.error || 'AI Job failed. Please try again.');
+            setJobId(null);
+        }
+    }, [jobStatus, navigate, onClose]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!topic.trim()) return;
+        setLocalError(null);
 
         generateRoadmap({ topic, skillLevel }, {
             onSuccess: (data) => {
-                onClose();
-                navigate(`/path/${data.pathId}`);
+                setJobId(data.jobId);
             }
         });
     };
+
+    const isGenerating = isPending || (jobId !== null && jobStatus?.status !== 'failed');
+    const displayError = localError || (mutationError as any)?.response?.data?.message;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -85,22 +102,28 @@ export default function AiPathGenerator({ onClose }: AiPathGeneratorProps) {
                         </div>
                     </div>
 
-                    {error && (
+                    {displayError && (
                         <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-600 text-sm animate-in head-shake">
                             <AlertCircle className="w-5 h-5 shrink-0" />
-                            <p className="font-medium">{(error as any).response?.data?.message || 'AI generation failed. Please try again.'}</p>
+                            <p className="font-medium">{displayError || 'AI generation failed. Please try again.'}</p>
                         </div>
                     )}
 
                     <button
                         type="submit"
-                        disabled={!topic.trim() || isPending}
+                        disabled={!topic.trim() || isGenerating}
                         className="w-full btn-primary bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 border-0 flex items-center justify-center gap-3 py-4 text-lg shadow-xl shadow-purple-500/30 disabled:opacity-70 disabled:grayscale transition-all"
                     >
-                        {isPending ? (
+                        {isGenerating ? (
                             <>
                                 <Loader2 className="w-6 h-6 animate-spin" />
-                                <span>Designing Roadmap...</span>
+                                <span>
+                                    {jobStatus?.status === 'active'
+                                        ? `Generating... ${jobStatus.progress}%`
+                                        : jobStatus?.status === 'waiting'
+                                        ? 'Waiting in queue...'
+                                        : 'Designing Roadmap...'}
+                                </span>
                             </>
                         ) : (
                             <>
