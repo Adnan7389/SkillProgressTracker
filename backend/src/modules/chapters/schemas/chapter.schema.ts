@@ -73,3 +73,4 @@ export const ChapterSchema = SchemaFactory.createForClass(Chapter);
 ChapterSchema.index({ learningPathId: 1, createdAt: 1 });
 ChapterSchema.index({ userId: 1, isCompleted: 1 });
 ChapterSchema.index({ userId: 1, completionDate: -1 });
+ChapterSchema.index({ learningPathId: 1, isCompleted: 1 });
