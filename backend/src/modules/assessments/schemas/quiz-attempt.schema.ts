@@ -24,3 +24,4 @@ export class QuizAttempt {
 export const QuizAttemptSchema = SchemaFactory.createForClass(QuizAttempt);
 // Compound index to quickly find a user's attempt for a specific chapter
 QuizAttemptSchema.index({ userId: 1, chapterId: 1 });
+QuizAttemptSchema.index({ assessmentId: 1 });
