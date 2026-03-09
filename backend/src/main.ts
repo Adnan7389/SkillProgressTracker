@@ -1,10 +1,11 @@
-import { NestFactory } from "@nestjs/core";
+import { NestFactory, HttpAdapterHost } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
 import { ValidationPipe } from "@nestjs/common";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { mongoClient, auth } from "./auth/auth.service.js";
+import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter.js";
 
 import { toNodeHandler } from "better-auth/node";
 
@@ -14,6 +15,10 @@ async function bootstrap() {
   console.log("✅ MongoDB connected");
 
   const app = await NestFactory.create(AppModule);
+
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
+
 
   app.enableCors({
     origin: process.env.FRONTEND_URL,
