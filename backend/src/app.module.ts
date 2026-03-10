@@ -12,11 +12,14 @@ import { AssessmentsModule } from "./modules/assessments/assessments.module.js";
 import { ChallengesModule } from "./modules/challenges/challenges.module.js";
 import { DashboardModule } from "./modules/dashboard/dashboard.module.js";
 
+import { validate } from "./config/env.validation.js";
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ".env",
+      validate,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
