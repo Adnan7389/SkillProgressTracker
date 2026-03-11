@@ -6,6 +6,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { mongoClient, auth } from "./auth/auth.service.js";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter.js";
+import { loggerConfig } from "./config/logger.config.js";
 
 import { toNodeHandler } from "better-auth/node";
 
@@ -14,7 +15,10 @@ async function bootstrap() {
   await mongoClient.connect();
   console.log("✅ MongoDB connected");
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: loggerConfig,
+  });
+
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
