@@ -1,4 +1,5 @@
 import { NestFactory, HttpAdapterHost } from "@nestjs/core";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module.js";
 import { ValidationPipe } from "@nestjs/common";
 import cookieParser from "cookie-parser";
@@ -18,6 +19,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: loggerConfig,
   });
+
+  const config = new DocumentBuilder()
+    .setTitle("Skill Progress Tracker API")
+    .setDescription("The Skill Progress Tracker API description")
+    .setVersion("1.0")
+    .addTag("AI")
+    .addTag("Learning Paths")
+    .addTag("Chapters")
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup("api/docs", app, document);
+
 
 
   const { httpAdapter } = app.get(HttpAdapterHost);
