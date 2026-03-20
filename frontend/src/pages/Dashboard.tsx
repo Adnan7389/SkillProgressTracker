@@ -8,20 +8,44 @@ import PathCard from '../components/dashboard/PathCard';
 import CreatePathForm from '../components/dashboard/CreatePathForm';
 import AiPathGenerator from '../components/dashboard/AiPathGenerator';
 import StatsOverview from '../components/dashboard/StatsOverview';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
     const { data: session } = useSession();
     const { data: paths, isLoading: isPathsLoading } = useLearningPaths();
     const { data: stats, isLoading: isStatsLoading } = useDashboardStats();
-    const { isCreateModalOpen, setCreateModalOpen } = useUiStore();
+    const { isCreateModalOpen, setCreateModalOpen, hasSeenOnboarding, setHasSeenOnboarding } = useUiStore();
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [showTour, setShowTour] = useState(false);
+    const [tourStep, setTourStep] = useState(0);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Trigger tour if user is new, has no paths, and hasn't seen onboarding yet
+        if (!isPathsLoading && paths && paths.length === 0 && !hasSeenOnboarding) {
+            setShowTour(true);
+        }
+    }, [isPathsLoading, paths, hasSeenOnboarding]);
 
     const handleLogout = async () => {
         await signOut();
         navigate('/login');
     };
+
+    const handleTourNext = () => {
+        if (tourStep < 1) {
+            setTourStep(prev => prev + 1);
+        } else {
+            setShowTour(false);
+            setHasSeenOnboarding(true);
+        }
+    };
+
+    const handleTourSkip = () => {
+        setShowTour(false);
+        setHasSeenOnboarding(true);
+    };
+
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -115,6 +139,55 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
+
+            {showTour && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[var(--background)]/20 backdrop-blur-[2px] animate-in fade-in duration-500">
+                    <div className="relative max-w-sm w-full bg-[var(--card)] border-2 border-purple-500/50 rounded-3xl p-8 shadow-2xl shadow-purple-500/20 animate-in zoom-in-95 duration-300">
+                        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-full flex items-center justify-center text-white shadow-xl">
+                            <Sparkles className="w-12 h-12 animate-pulse" />
+                        </div>
+
+                        <div className="mt-8 text-center">
+                            {tourStep === 0 ? (
+                                <div className="animate-in slide-in-from-right-4">
+                                    <h3 className="text-2xl font-black mb-3 italic">Generate with AI</h3>
+                                    <p className="text-[var(--muted-foreground)] mb-8 font-medium leading-relaxed">
+                                        Type any topic—from "Quantum Physics" to "Spanish Cooking"—and our AI will craft a personalized roadmap just for you.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="animate-in slide-in-from-right-4">
+                                    <h3 className="text-2xl font-black mb-3 italic">Track Your Mastery</h3>
+                                    <p className="text-[var(--muted-foreground)] mb-8 font-medium leading-relaxed">
+                                        Monitor your streaks and skill levels right here. Every chapter completed brings you closer to mastery.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between gap-4">
+                                <button
+                                    onClick={handleTourSkip}
+                                    className="text-sm font-bold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors px-4"
+                                >
+                                    Skip Tour
+                                </button>
+                                <button
+                                    onClick={handleTourNext}
+                                    className="btn-primary bg-gradient-to-r from-purple-600 to-indigo-600 border-0 px-8 py-3 flex-1 shadow-lg shadow-purple-500/20"
+                                >
+                                    {tourStep === 0 ? 'Next' : 'Got it!'}
+                                </button>
+                            </div>
+
+                            <div className="flex justify-center gap-2 mt-8">
+                                <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${tourStep === 0 ? 'w-8 bg-purple-500' : 'bg-[var(--border)]'}`} />
+                                <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${tourStep === 1 ? 'w-8 bg-purple-500' : 'bg-[var(--border)]'}`} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
+
