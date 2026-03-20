@@ -79,6 +79,24 @@ export default function AiPathGenerator({ onClose }: AiPathGeneratorProps) {
                             className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all font-medium"
                             autoFocus
                         />
+                        <div className="flex flex-wrap gap-2 mt-4">
+                            {[
+                                { label: '🧪 Machine Learning', value: 'Machine Learning' },
+                                { label: '🎨 UI/UX Design', value: 'UI/UX Design' },
+                                { label: '🧠 Public Speaking', value: 'Public Speaking' },
+                                { label: '🚀 React Native', value: 'React Native' },
+                                { label: '🔋 Sustainable Energy', value: 'Sustainable Energy' }
+                            ].map((suggestion) => (
+                                <button
+                                    key={suggestion.value}
+                                    type="button"
+                                    onClick={() => setTopic(suggestion.value)}
+                                    className="px-3 py-1.5 text-xs font-bold bg-[var(--muted)] hover:bg-purple-100 dark:hover:bg-purple-900/30 text-[var(--muted-foreground)] hover:text-purple-600 rounded-full transition-all border border-transparent hover:border-purple-200"
+                                >
+                                    {suggestion.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div>
