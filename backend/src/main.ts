@@ -31,11 +31,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api/docs", app, document);
 
-
-
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
-
 
   app.enableCors({
     origin: process.env.FRONTEND_URL,
@@ -54,7 +51,10 @@ async function bootstrap() {
       max: 100,
       standardHeaders: true,
       legacyHeaders: false,
-      message: { message: "Too many requests, please try again later.", statusCode: 429 },
+      message: {
+        message: "Too many requests, please try again later.",
+        statusCode: 429,
+      },
     }),
   );
 
@@ -67,7 +67,10 @@ async function bootstrap() {
       skip: (req) => req.originalUrl.includes("/job-status"),
       standardHeaders: true,
       legacyHeaders: false,
-      message: { message: "AI rate limit exceeded. Please wait before generating again.", statusCode: 429 },
+      message: {
+        message: "AI rate limit exceeded. Please wait before generating again.",
+        statusCode: 429,
+      },
     }),
   );
 

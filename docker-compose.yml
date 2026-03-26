@@ -13,7 +13,6 @@ services:
     volumes:
       - redis_data:/data
 
-
   backend:
     build: ./backend
     ports:
@@ -30,11 +29,10 @@ services:
       - mongodb
       - redis
 
-
   frontend:
     build: ./frontend
     ports:
-      - "5173:80"
+      - "5175:80"
     depends_on:
       - backend
 
