@@ -59,25 +59,51 @@ export default function StatsOverview({ stats, isLoading }: StatsOverviewProps) 
             </div>
 
             {/* Learning Streak */}
-            <div className="p-5 md:p-6 bg-[var(--card)] border border-orange-500/30 rounded-2xl flex items-center gap-4 hover:border-orange-500 transition-colors group">
-                <div className="p-3 bg-orange-500/10 rounded-xl group-hover:scale-110 group-hover:bg-orange-500/20 transition-all duration-300 relative">
-                    <Flame className="w-6 h-6 text-orange-500 relative z-10" />
-                    {(stats?.learningStreak || 0) > 3 && (
-                        <div className="absolute inset-0 bg-orange-500/20 blur-md rounded-full animate-pulse z-0" />
+            <div className={`p-5 md:p-6 bg-[var(--card)] border rounded-2xl flex items-center gap-4 transition-all duration-500 group relative overflow-hidden ${
+                (stats?.learningStreak || 0) > 0 
+                ? 'border-orange-500/50 shadow-lg shadow-orange-500/10' 
+                : 'border-[var(--border)]'
+            }`}>
+                {/* Background Glow for high streaks */}
+                {(stats?.learningStreak || 0) > 0 && (
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/5 blur-3xl rounded-full animate-pulse" />
+                )}
+                
+                <div className={`p-3 rounded-xl transition-all duration-500 relative ${
+                    (stats?.learningStreak || 0) > 0 
+                    ? 'bg-orange-500/20 scale-110 shadow-inner' 
+                    : 'bg-orange-500/10'
+                }`}>
+                    <Flame className={`w-6 h-6 relative z-10 transition-colors ${
+                        (stats?.learningStreak || 0) > 0 ? 'text-orange-500 fill-orange-500/20' : 'text-orange-400'
+                    }`} />
+                    
+                    {(stats?.learningStreak || 0) > 0 && (
+                        <div className="absolute inset-0 bg-orange-400/30 blur-md rounded-full animate-ping opacity-20" />
                     )}
                 </div>
                 <div>
-                    <div className="text-xs md:text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-wider mb-1">
-                        Learning Streak
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="text-xs md:text-sm font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
+                            Learning Streak
+                        </div>
+                        {(stats?.learningStreak || 0) >= 7 && (
+                            <span className="text-[10px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded-md animate-bounce">
+                                MASTER
+                            </span>
+                        )}
                     </div>
                     <div className="text-2xl md:text-3xl font-black flex items-baseline gap-1">
-                        {stats?.learningStreak || 0}
+                        <span className={(stats?.learningStreak || 0) > 0 ? 'text-orange-500' : ''}>
+                            {stats?.learningStreak || 0}
+                        </span>
                         <span className="text-sm md:text-base font-bold text-[var(--muted-foreground)] ml-1">
                             days
                         </span>
                     </div>
                 </div>
             </div>
+
 
             {/* Study Time */}
             <div className="p-5 md:p-6 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex items-center gap-4 hover:border-[var(--primary)] transition-colors group">
