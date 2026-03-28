@@ -55,4 +55,4 @@ import { validate } from "./config/env.validation.js";
 
   controllers: [AppController, TestController],
 })
-export class AppModule { }
+export class AppModule {}
