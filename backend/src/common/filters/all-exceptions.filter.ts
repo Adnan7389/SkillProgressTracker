@@ -27,7 +27,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const isProduction = process.env.NODE_ENV === "production";
-    
+
     // Log the full error for the developer internally
     this.logger.error(
       `Exception thrown at ${ctx.getRequest().url}: ${
@@ -45,9 +45,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(ctx.getRequest()),
       // In production, we never reveal the raw error message if it's not a controlled HttpException
-      message: isProduction && httpStatus === HttpStatus.INTERNAL_SERVER_ERROR
-        ? "An unexpected error occurred. Please try again later."
-        : typeof message === "object" ? (message as any).message || message : message,
+      message:
+        isProduction && httpStatus === HttpStatus.INTERNAL_SERVER_ERROR
+          ? "An unexpected error occurred. Please try again later."
+          : typeof message === "object"
+            ? (message as any).message || message
+            : message,
     };
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
