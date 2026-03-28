@@ -17,6 +17,10 @@ export const envSchema = z.object({
   GEMINI_API_KEY: z.string().min(1),
   GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
 
+  // Google Custom Search API (Optional - for resource discovery)
+  GOOGLE_SEARCH_API_KEY: z.string().optional(),
+  GOOGLE_SEARCH_ENGINE_ID: z.string().optional(),
+
   REDIS_HOST: z.string().default("localhost"),
   REDIS_PORT: z.coerce.number().default(6379),
 
