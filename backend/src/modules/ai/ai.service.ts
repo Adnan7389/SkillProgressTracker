@@ -8,7 +8,7 @@ import { AiClientService } from "./ai-client.service.js";
 import { ResourceDiscoveryService } from "./resource-discovery.service.js";
 import { LearningPathsService } from "../learning-paths/learning-paths.service.js";
 import { ChaptersService } from "../chapters/chapters.service.js";
-import { z } from "zod";
+// import { z } from "zod";
 
 @Injectable()
 export class AiService {
@@ -54,15 +54,21 @@ export class AiService {
   }
 
   async generateRoadmap(userId: string, topic: string, skillLevel: string) {
-    this.logger.log(`Queueing roadmap generation for topic: ${topic} (${skillLevel})`);
-    
-    const job = await this.roadmapQueue.add("generate", { userId, topic, skillLevel }, {
-      attempts: 3,
-      backoff: {
-        type: "exponential",
-        delay: 2000,
+    this.logger.log(
+      `Queueing roadmap generation for topic: ${topic} (${skillLevel})`,
+    );
+
+    const job = await this.roadmapQueue.add(
+      "generate",
+      { userId, topic, skillLevel },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 2000,
+        },
       },
-    });
+    );
     return { jobId: job.id };
   }
 
