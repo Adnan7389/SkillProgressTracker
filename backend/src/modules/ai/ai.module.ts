@@ -29,7 +29,12 @@ import { ChaptersModule } from "../chapters/chapters.module.js";
     ChaptersModule,
   ],
   controllers: [AiController],
-  providers: [AiService, AiClientService, ResourceDiscoveryService, RoadmapProcessor],
+  providers: [
+    AiService,
+    AiClientService,
+    ResourceDiscoveryService,
+    RoadmapProcessor,
+  ],
   exports: [AiService, ResourceDiscoveryService, AiClientService],
 })
-export class AiModule { }
+export class AiModule {}
