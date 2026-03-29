@@ -8,45 +8,47 @@ import { ChaptersService } from "../chapters/chapters.service.js";
 import { z } from "zod";
 
 const ChapterSchema = z.object({
-    title: z.string().max(200),
-    description: z.string().max(1000).optional(),
-    difficulty: z.enum(["easy", "medium", "hard"]).default("medium"),
-    estimatedMinutes: z.number().min(30).max(240).default(60),
+  title: z.string().max(200),
+  description: z.string().max(1000).optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).default("medium"),
+  estimatedMinutes: z.number().min(30).max(240).default(60),
 });
 
 const RoadmapSchema = z.object({
-    pathName: z.string().max(100),
-    description: z.string().max(500),
-    chapters: z.array(ChapterSchema).min(1).max(10),
+  pathName: z.string().max(100),
+  description: z.string().max(500),
+  chapters: z.array(ChapterSchema).min(1).max(10),
 });
 
 interface GenerateRoadmapJobData {
-    userId: string;
-    topic: string;
-    skillLevel: string;
+  userId: string;
+  topic: string;
+  skillLevel: string;
 }
 
 @Processor("roadmap-generation")
 export class RoadmapProcessor extends WorkerHost {
-    private readonly logger = new Logger(RoadmapProcessor.name);
+  private readonly logger = new Logger(RoadmapProcessor.name);
 
-    constructor(
-        private readonly aiClientService: AiClientService,
-        private readonly resourceDiscoveryService: ResourceDiscoveryService,
-        private readonly learningPathsService: LearningPathsService,
-        private readonly chaptersService: ChaptersService,
-    ) {
-        super();
-    }
+  constructor(
+    private readonly aiClientService: AiClientService,
+    private readonly resourceDiscoveryService: ResourceDiscoveryService,
+    private readonly learningPathsService: LearningPathsService,
+    private readonly chaptersService: ChaptersService,
+  ) {
+    super();
+  }
 
-    async process(job: Job<GenerateRoadmapJobData, any, string>): Promise<any> {
-        const { userId, topic, skillLevel } = job.data;
-        this.logger.log(`Processing roadmap generation job ${job.id} for topic: ${topic}`);
+  async process(job: Job<GenerateRoadmapJobData, any, string>): Promise<any> {
+    const { userId, topic, skillLevel } = job.data;
+    this.logger.log(
+      `Processing roadmap generation job ${job.id} for topic: ${topic}`,
+    );
 
-        try {
-            await job.updateProgress(10); // Connecting to AI
+    try {
+      await job.updateProgress(10); // Connecting to AI
 
-            const prompt = `
+      const prompt = `
 You are an expert curriculum designer. Generate a structured learning path for the topic: "${topic}" at a "${skillLevel}" level.
 The learning path should be logically ordered and suitable for the requested skill level.
 
@@ -74,86 +76,89 @@ Respond ONLY with a JSON object that follows this exact structure:
 Limit the roadmap to between 3 and 7 chapters.
 `;
 
-            const responseText = await this.aiClientService.generateText(prompt);
-            await job.updateProgress(50); // Parsing response
+      const responseText = await this.aiClientService.generateText(prompt);
+      await job.updateProgress(50); // Parsing response
 
-            const parsedData = this.parseAndValidateRoadmap(responseText);
-            await job.updateProgress(60); // Saving learning path
+      const parsedData = this.parseAndValidateRoadmap(responseText);
+      await job.updateProgress(60); // Saving learning path
 
-            // 1. Create the Learning Path
-            const path = await this.learningPathsService.create(userId, {
-                name: parsedData.pathName,
-                description: parsedData.description,
-                skillLevel: skillLevel as any,
-            });
+      // 1. Create the Learning Path
+      const path = await this.learningPathsService.create(userId, {
+        name: parsedData.pathName,
+        description: parsedData.description,
+        skillLevel: skillLevel as any,
+      });
 
-            await job.updateProgress(75); // Saving chapters
+      await job.updateProgress(75); // Saving chapters
 
-            // 2. Create the Chapters and collect their IDs
-            const createdChapters: Array<{ id: string; title: string }> = [];
-            for (const chapterData of parsedData.chapters) {
-                const chapter = await this.chaptersService.create(
-                    userId,
-                    path._id.toString(),
-                    {
-                        title: chapterData.title,
-                        description: chapterData.description,
-                        difficulty: chapterData.difficulty as any,
-                        estimatedMinutes: chapterData.estimatedMinutes,
-                    },
-                );
-                createdChapters.push({
-                    id: chapter._id.toString(),
-                    title: chapter.title,
-                });
-            }
+      // 2. Create the Chapters and collect their IDs
+      const createdChapters: Array<{ id: string; title: string }> = [];
+      for (const chapterData of parsedData.chapters) {
+        const chapter = await this.chaptersService.create(
+          userId,
+          path._id.toString(),
+          {
+            title: chapterData.title,
+            description: chapterData.description,
+            difficulty: chapterData.difficulty as any,
+            estimatedMinutes: chapterData.estimatedMinutes,
+          },
+        );
+        createdChapters.push({
+          id: chapter._id.toString(),
+          title: chapter.title,
+        });
+      }
 
-            await job.updateProgress(90); // Triggering resource discovery
+      await job.updateProgress(90); // Triggering resource discovery
 
-            // 3. Fire-and-forget: discover resources for all chapters asynchronously
-            this.resourceDiscoveryService
-                .discoverForChapters(
-                    createdChapters,
-                    userId,
-                    parsedData.pathName,
-                    skillLevel,
-                )
-                .catch((err) =>
-                    this.logger.error("Background resource discovery failed", err.stack),
-                );
+      // 3. Fire-and-forget: discover resources for all chapters asynchronously
+      this.resourceDiscoveryService
+        .discoverForChapters(
+          createdChapters,
+          userId,
+          parsedData.pathName,
+          skillLevel,
+        )
+        .catch((err) =>
+          this.logger.error("Background resource discovery failed", err.stack),
+        );
 
-            await job.updateProgress(100); // Complete
-            this.logger.log(`Job ${job.id} completed successfully`);
+      await job.updateProgress(100); // Complete
+      this.logger.log(`Job ${job.id} completed successfully`);
 
-            return { pathId: path._id.toString(), name: path.name };
-        } catch (error) {
-            this.logger.error(`Failed to process job ${job.id}: ${error.message}`, error.stack);
-            throw error; // BullMQ will catch this and mark the job as failed
-        }
+      return { pathId: path._id.toString(), name: path.name };
+    } catch (error) {
+      this.logger.error(
+        `Failed to process job ${job.id}: ${error.message}`,
+        error.stack,
+      );
+      throw error; // BullMQ will catch this and mark the job as failed
     }
+  }
 
-    private parseAndValidateRoadmap(responseText: string) {
-        let jsonText = responseText.trim();
-        // Remove markdown blocks if present
-        if (jsonText.startsWith("```json")) {
-            jsonText = jsonText.slice(7);
-        }
-        if (jsonText.startsWith("```")) {
-            jsonText = jsonText.slice(3);
-        }
-        if (jsonText.endsWith("```")) {
-            jsonText = jsonText.slice(0, -3);
-        }
-        jsonText = jsonText.trim();
-
-        try {
-            const rawData = JSON.parse(jsonText);
-            return RoadmapSchema.parse(rawData);
-        } catch (err) {
-            this.logger.error("Invalid AI response structure", err);
-            throw new Error(
-                "AI returned an invalid roadmap structure. Please try again.",
-            );
-        }
+  private parseAndValidateRoadmap(responseText: string) {
+    let jsonText = responseText.trim();
+    // Remove markdown blocks if present
+    if (jsonText.startsWith("```json")) {
+      jsonText = jsonText.slice(7);
     }
+    if (jsonText.startsWith("```")) {
+      jsonText = jsonText.slice(3);
+    }
+    if (jsonText.endsWith("```")) {
+      jsonText = jsonText.slice(0, -3);
+    }
+    jsonText = jsonText.trim();
+
+    try {
+      const rawData = JSON.parse(jsonText);
+      return RoadmapSchema.parse(rawData);
+    } catch (err) {
+      this.logger.error("Invalid AI response structure", err);
+      throw new Error(
+        "AI returned an invalid roadmap structure. Please try again.",
+      );
+    }
+  }
 }
