@@ -7,7 +7,12 @@ import {
   UseGuards,
   Request,
 } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
 import { AuthGuard } from "../../common/guards/auth.guard.js";
 import { AiService } from "./ai.service.js";
 import { ResourceDiscoveryService } from "./resource-discovery.service.js";
@@ -27,11 +32,14 @@ export class AiController {
     private readonly resourceDiscoveryService: ResourceDiscoveryService,
     private readonly chaptersService: ChaptersService,
     private readonly learningPathsService: LearningPathsService,
-  ) { }
+  ) {}
 
   @Post("recommend")
   @ApiOperation({ summary: "Get a study recommendation for a learning path" })
-  @ApiResponse({ status: 200, description: "Returns an AI-generated study recommendation" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns an AI-generated study recommendation",
+  })
   getRecommendation(
     @Request() req: AuthenticatedRequest,
     @Body() getRecommendationDto: GetRecommendationDto,
@@ -44,7 +52,10 @@ export class AiController {
 
   @Post("generate-roadmap")
   @ApiOperation({ summary: "Queue a new AI roadmap generation" })
-  @ApiResponse({ status: 202, description: "Job queued successfully, returns jobId" })
+  @ApiResponse({
+    status: 202,
+    description: "Job queued successfully, returns jobId",
+  })
   generateRoadmap(
     @Request() req: AuthenticatedRequest,
     @Body() generateRoadmapDto: GenerateRoadmapDto,
@@ -58,13 +69,18 @@ export class AiController {
 
   @Get("job-status/:jobId")
   @ApiOperation({ summary: "Get the status of a background AI job" })
-  @ApiResponse({ status: 200, description: "Returns the current status and progress of the job" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns the current status and progress of the job",
+  })
   getJobStatus(@Param("jobId") jobId: string) {
     return this.aiService.getJobStatus(jobId);
   }
 
   @Post("discover-resources/:chapterId")
-  @ApiOperation({ summary: "Start background resource discovery for a chapter" })
+  @ApiOperation({
+    summary: "Start background resource discovery for a chapter",
+  })
   @ApiResponse({ status: 202, description: "Discovery process started" })
   async discoverResources(
     @Request() req: AuthenticatedRequest,
@@ -93,7 +109,9 @@ export class AiController {
   }
 
   @Post("refresh-resources/:chapterId")
-  @ApiOperation({ summary: "Refresh resources for a chapter (resets current resources)" })
+  @ApiOperation({
+    summary: "Refresh resources for a chapter (resets current resources)",
+  })
   @ApiResponse({ status: 202, description: "Resource refresh started" })
   async refreshResources(
     @Request() req: AuthenticatedRequest,
