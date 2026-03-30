@@ -32,6 +32,23 @@ export class Resource {
 
 export const ResourceSchema = SchemaFactory.createForClass(Resource);
 
+@Schema({ _id: false })
+export class SearchQuery {
+  @Prop({ required: true, enum: ["doc", "youtube"] })
+  type: string;
+
+  @Prop({ required: true, trim: true, maxlength: 200 })
+  title: string;
+
+  @Prop({ required: true, trim: true, maxlength: 300 })
+  query: string;
+
+  @Prop({ trim: true, maxlength: 300, default: "" })
+  description: string;
+}
+
+export const SearchQuerySchema = SchemaFactory.createForClass(SearchQuery);
+
 @Schema({ timestamps: true })
 export class Chapter extends Document {
   @Prop({ type: Types.ObjectId, ref: "LearningPath", required: true })
@@ -63,6 +80,9 @@ export class Chapter extends Document {
 
   @Prop({ type: [ResourceSchema], default: [] })
   resources: Resource[];
+
+  @Prop({ type: [SearchQuerySchema], default: [] })
+  searchQueries: SearchQuery[];
 
   @Prop({ enum: ["pending", "completed", "failed"], default: "pending" })
   resourceStatus: string;
