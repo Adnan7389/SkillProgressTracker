@@ -53,4 +53,3 @@ export class CreateChapterDto {
   @Max(300)
   estimatedMinutes?: number;
 }
-
