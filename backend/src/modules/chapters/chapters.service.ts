@@ -110,6 +110,23 @@ export class ChaptersService {
     return chapter.save();
   }
 
+  async saveSearchQueries(
+    id: string,
+    userId: string,
+    queries: Array<{
+      type: string;
+      title: string;
+      query: string;
+      description: string;
+    }>,
+  ) {
+    const chapter = await this.findOne(id, userId);
+    chapter.searchQueries = queries as any;
+    chapter.resourceStatus = "completed";
+    chapter.resources = []; // No URLs, just search queries
+    return chapter.save();
+  }
+
   private async updateLearningPathProgress(learningPathId: string) {
     const chapters = await this.chapterModel.find({ learningPathId }).exec();
     const completedCount = chapters.filter((c) => c.isCompleted).length;
