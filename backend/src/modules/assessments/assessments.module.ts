@@ -3,7 +3,10 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { AssessmentsController } from "./assessments.controller.js";
 import { AssessmentsService } from "./assessments.service.js";
 import { Assessment, AssessmentSchema } from "./schemas/assessment.schema.js";
-import { QuizAttempt, QuizAttemptSchema } from "./schemas/quiz-attempt.schema.js";
+import {
+  QuizAttempt,
+  QuizAttemptSchema,
+} from "./schemas/quiz-attempt.schema.js";
 import { ChaptersModule } from "../chapters/chapters.module.js";
 import { AiModule } from "../ai/ai.module.js";
 
@@ -19,4 +22,4 @@ import { AiModule } from "../ai/ai.module.js";
   controllers: [AssessmentsController],
   providers: [AssessmentsService],
 })
-export class AssessmentsModule { }
+export class AssessmentsModule {}
