@@ -38,4 +38,3 @@ export class CreateLearningPathDto {
   @IsEnum(["beginner", "intermediate", "advanced"])
   skillLevel: "beginner" | "intermediate" | "advanced";
 }
-
