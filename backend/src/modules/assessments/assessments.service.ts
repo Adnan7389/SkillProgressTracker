@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Assessment, AssessmentDocument } from "./schemas/assessment.schema.js";
-import { QuizAttempt, QuizAttemptDocument } from "./schemas/quiz-attempt.schema.js";
+import {
+  QuizAttempt,
+  QuizAttemptDocument,
+} from "./schemas/quiz-attempt.schema.js";
 import { GenerateAssessmentDto } from "./dto/generate-assessment.dto.js";
 import { SubmitAssessmentDto } from "./dto/submit-assessment.dto.js";
 import { ChaptersService } from "../chapters/chapters.service.js";
@@ -27,7 +34,7 @@ export class AssessmentsService {
     private readonly quizAttemptModel: Model<QuizAttemptDocument>,
     private readonly chaptersService: ChaptersService,
     private readonly aiClientService: AiClientService,
-  ) { }
+  ) {}
 
   async generateAssessment(userId: string, dto: GenerateAssessmentDto) {
     // 1. Verify chapter exists and user has access
