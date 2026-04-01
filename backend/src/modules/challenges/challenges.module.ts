@@ -8,15 +8,15 @@ import { LearningPathsModule } from "../learning-paths/learning-paths.module.js"
 import { AiModule } from "../ai/ai.module.js";
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([
-            { name: Challenge.name, schema: ChallengeSchema },
-        ]),
-        ChaptersModule,
-        LearningPathsModule,
-        AiModule,
-    ],
-    controllers: [ChallengesController],
-    providers: [ChallengesService],
+  imports: [
+    MongooseModule.forFeature([
+      { name: Challenge.name, schema: ChallengeSchema },
+    ]),
+    ChaptersModule,
+    LearningPathsModule,
+    AiModule,
+  ],
+  controllers: [ChallengesController],
+  providers: [ChallengesService],
 })
-export class ChallengesModule { }
+export class ChallengesModule {}
