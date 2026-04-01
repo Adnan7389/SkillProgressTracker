@@ -35,4 +35,3 @@ export class SubmitAssessmentDto {
   @IsNumber({}, { each: true })
   answers: number[];
 }
-
