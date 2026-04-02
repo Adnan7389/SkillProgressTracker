@@ -6,10 +6,10 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator.js";
 @Controller("dashboard")
 @UseGuards(AuthGuard)
 export class DashboardController {
-    constructor(private readonly dashboardService: DashboardService) { }
+  constructor(private readonly dashboardService: DashboardService) {}
 
-    @Get("stats")
-    async getStats(@CurrentUser("id") userId: string) {
-        return this.dashboardService.getStats(userId);
-    }
+  @Get("stats")
+  async getStats(@CurrentUser("id") userId: string) {
+    return this.dashboardService.getStats(userId);
+  }
 }
