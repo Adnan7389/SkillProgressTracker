@@ -8,4 +8,4 @@ import { NotificationsModule } from "../notifications/notifications.module.js";
   providers: [StreaksService],
   exports: [StreaksService], // Export the service
 })
-export class StreaksModule { }
+export class StreaksModule {}
