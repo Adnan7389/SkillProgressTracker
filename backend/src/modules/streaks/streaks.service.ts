@@ -7,7 +7,7 @@ import { NotificationsService } from "../notifications/notifications.service.js"
 export class StreaksService {
   private readonly logger = new Logger(StreaksService.name);
 
-  constructor(private readonly notificationsService: NotificationsService) { }
+  constructor(private readonly notificationsService: NotificationsService) {}
 
   /**
    * Normalize a date to YYYY-MM-DD format
@@ -54,11 +54,12 @@ export class StreaksService {
     const todayStr = this.normalize(new Date());
 
     // Find users with a streak who haven't been active today
-    const usersToRemind = await usersCollection.find({
-      lastActiveDate: { $ne: todayStr },
-      learningStreak: { $gt: 0 },
-      email: { $exists: true },
-    })
+    const usersToRemind = await usersCollection
+      .find({
+        lastActiveDate: { $ne: todayStr },
+        learningStreak: { $gt: 0 },
+        email: { $exists: true },
+      })
       .toArray();
 
     for (const user of usersToRemind) {
