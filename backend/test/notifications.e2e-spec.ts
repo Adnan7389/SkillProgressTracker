@@ -1,9 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { NotificationsService } from '../src/modules/notifications/notifications.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { NotificationsService } from "../src/modules/notifications/notifications.service";
 
-describe('NotificationsService (e2e)', () => {
+describe("NotificationsService (e2e)", () => {
   let app: INestApplication;
   let notificationsService: NotificationsService;
   let configService: ConfigService;
@@ -13,7 +13,7 @@ describe('NotificationsService (e2e)', () => {
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          envFilePath: '.env.test',
+          envFilePath: ".env.test",
         }),
       ],
       providers: [NotificationsService],
@@ -22,7 +22,8 @@ describe('NotificationsService (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    notificationsService = moduleFixture.get<NotificationsService>(NotificationsService);
+    notificationsService =
+      moduleFixture.get<NotificationsService>(NotificationsService);
     configService = moduleFixture.get<ConfigService>(ConfigService);
   });
 
@@ -30,37 +31,41 @@ describe('NotificationsService (e2e)', () => {
     await app.close();
   });
 
-  describe('sendEmail', () => {
-    it('should skip sending email when transporter is not initialized', async () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+  describe("sendEmail", () => {
+    it("should skip sending email when transporter is not initialized", async () => {
+      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
 
       await notificationsService.sendEmail(
-        'test@example.com',
-        'Test Subject',
-        '<p>Test HTML</p>',
+        "test@example.com",
+        "Test Subject",
+        "<p>Test HTML</p>",
       );
 
       consoleSpy.mockRestore();
     });
 
-    it('should send email when transporter is initialized', async () => {
-      const testEmail = 'recipient@example.com';
-      const testSubject = 'Test Email';
-      const testHtml = '<h1>Hello</h1>';
+    it("should send email when transporter is initialized", async () => {
+      const testEmail = "recipient@example.com";
+      const testSubject = "Test Email";
+      const testHtml = "<h1>Hello</h1>";
 
       await notificationsService.sendEmail(testEmail, testSubject, testHtml);
     });
   });
 
-  describe('sendStreakReminder', () => {
-    it('should call sendEmail with correct parameters', async () => {
-      const testEmail = 'streak@example.com';
-      const testName = 'John Doe';
+  describe("sendStreakReminder", () => {
+    it("should call sendEmail with correct parameters", async () => {
+      const testEmail = "streak@example.com";
+      const testName = "John Doe";
       const testStreak = 7;
 
-      const sendEmailSpy = jest.spyOn(notificationsService, 'sendEmail');
+      const sendEmailSpy = jest.spyOn(notificationsService, "sendEmail");
 
-      await notificationsService.sendStreakReminder(testEmail, testName, testStreak);
+      await notificationsService.sendStreakReminder(
+        testEmail,
+        testName,
+        testStreak,
+      );
 
       expect(sendEmailSpy).toHaveBeenCalledWith(
         testEmail,
@@ -69,12 +74,17 @@ describe('NotificationsService (e2e)', () => {
       );
     });
 
-    it('should include frontend URL in email HTML', async () => {
-      const frontendUrl = configService.get('FRONTEND_URL') || 'http://localhost:5173';
+    it("should include frontend URL in email HTML", async () => {
+      const frontendUrl =
+        configService.get("FRONTEND_URL") || "http://localhost:5173";
 
-      const sendEmailSpy = jest.spyOn(notificationsService, 'sendEmail');
+      const sendEmailSpy = jest.spyOn(notificationsService, "sendEmail");
 
-      await notificationsService.sendStreakReminder('test@example.com', 'Test', 5);
+      await notificationsService.sendStreakReminder(
+        "test@example.com",
+        "Test",
+        5,
+      );
 
       expect(sendEmailSpy).toHaveBeenCalledWith(
         expect.any(String),
@@ -83,11 +93,11 @@ describe('NotificationsService (e2e)', () => {
       );
     });
 
-    it('should handle special characters in user name', async () => {
-      const sendEmailSpy = jest.spyOn(notificationsService, 'sendEmail');
+    it("should handle special characters in user name", async () => {
+      const sendEmailSpy = jest.spyOn(notificationsService, "sendEmail");
 
       await notificationsService.sendStreakReminder(
-        'test@example.com',
+        "test@example.com",
         'John "The Learner" Doe',
         10,
       );
@@ -96,22 +106,22 @@ describe('NotificationsService (e2e)', () => {
     });
   });
 
-  describe('transporter initialization', () => {
-    it('should log warning when SMTP config is missing', () => {
+  describe("transporter initialization", () => {
+    it("should log warning when SMTP config is missing", () => {
       const testConfigService = new ConfigService();
       const service = new NotificationsService(testConfigService);
-      
+
       expect(service).toBeDefined();
     });
 
-    it('should initialize transporter with valid config', () => {
+    it("should initialize transporter with valid config", () => {
       const mockConfigService = {
         get: jest.fn((key: string) => {
           const config: Record<string, any> = {
-            SMTP_HOST: 'smtp.example.com',
+            SMTP_HOST: "smtp.example.com",
             SMTP_PORT: 587,
-            SMTP_USER: 'user@example.com',
-            SMTP_PASS: 'password123',
+            SMTP_USER: "user@example.com",
+            SMTP_PASS: "password123",
             EMAIL_FROM: '"Test" <test@example.com>',
           };
           return config[key];
