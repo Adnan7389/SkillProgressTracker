@@ -1,8 +1,9 @@
-import { ExternalLink, BookOpen, Youtube, RefreshCw, Sparkles, Loader2, AlertCircle } from 'lucide-react';
-import type { Resource, ResourceStatus } from '../../types';
+import { ExternalLink, BookOpen, Youtube, RefreshCw, Sparkles, Loader2, AlertCircle, Search } from 'lucide-react';
+import type { Resource, ResourceStatus, SearchQuery } from '../../types';
 
 interface ResourceListProps {
     resources: Resource[];
+    searchQueries?: SearchQuery[];
     resourceStatus: ResourceStatus;
     onDiscover: () => void;
     onRefresh: () => void;
@@ -11,6 +12,7 @@ interface ResourceListProps {
 
 export default function ResourceList({
     resources,
+    searchQueries = [],
     resourceStatus,
     onDiscover,
     onRefresh,
@@ -18,6 +20,13 @@ export default function ResourceList({
 }: ResourceListProps) {
     const docs = resources?.filter(r => r.type === 'doc').sort((a, b) => a.priority - b.priority) || [];
     const videos = resources?.filter(r => r.type === 'youtube').sort((a, b) => a.priority - b.priority) || [];
+
+    const queryDocs = searchQueries?.filter(q => q.type === 'doc') || [];
+    const queryVideos = searchQueries?.filter(q => q.type === 'youtube') || [];
+
+    // Helper to create DuckDuckGo search URL
+    const getSearchUrl = (query: string) => `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+    const getYouTubeSearchUrl = (query: string) => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
 
     // Loading state
     if (resourceStatus === 'pending' && (!resources || resources.length === 0)) {
@@ -76,8 +85,8 @@ export default function ResourceList({
         );
     }
 
-    // Empty state (completed but no resources)
-    if (resourceStatus === 'completed' && resources.length === 0) {
+    // Empty state (completed but no resources and no search queries)
+    if (resourceStatus === 'completed' && resources.length === 0 && searchQueries.length === 0) {
         return (
             <div className="mt-3">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
@@ -88,7 +97,91 @@ export default function ResourceList({
         );
     }
 
-    // Resources loaded
+    // Fallback state: no URLs but search queries available
+    if (resourceStatus === 'completed' && resources.length === 0 && searchQueries.length > 0) {
+        return (
+            <div className="mt-3">
+                <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                        Smart Resources
+                    </h4>
+                </div>
+
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3 mb-3">
+                    <div className="flex items-start gap-2">
+                        <Search className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                        <p className="text-xs text-[var(--muted-foreground)]">
+                            Monthly search quota exceeded. Click below to search for these AI-curated resources:
+                        </p>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    {/* Documentation Search Queries */}
+                    {queryDocs.length > 0 && (
+                        <div className="space-y-1.5">
+                            {queryDocs.map((query, idx) => (
+                                <a
+                                    key={`q-doc-${idx}`}
+                                    href={getSearchUrl(query.query)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-blue-500/5 border border-blue-500/10 hover:border-blue-500/30 hover:bg-blue-500/10 transition-all group"
+                                >
+                                    <BookOpen className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                                                {query.title}
+                                            </span>
+                                            <ExternalLink className="w-3 h-3 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                        </div>
+                                        {query.description && (
+                                            <p className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-2">
+                                                {query.description}
+                                            </p>
+                                        )}
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* YouTube Search Queries */}
+                    {queryVideos.length > 0 && (
+                        <div className="space-y-1.5">
+                            {queryVideos.map((query, idx) => (
+                                <a
+                                    key={`q-yt-${idx}`}
+                                    href={getYouTubeSearchUrl(query.query)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-red-500/5 border border-red-500/10 hover:border-red-500/30 hover:bg-red-500/10 transition-all group"
+                                >
+                                    <Youtube className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                                                {query.title}
+                                            </span>
+                                            <ExternalLink className="w-3 h-3 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                        </div>
+                                        {query.description && (
+                                            <p className="text-xs text-[var(--muted-foreground)] mt-0.5 line-clamp-2">
+                                                {query.description}
+                                            </p>
+                                        )}
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // Resources loaded (real URLs from Google)
     return (
         <div className="mt-3">
             <div className="flex items-center justify-between mb-2">
