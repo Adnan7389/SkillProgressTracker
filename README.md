@@ -5,6 +5,7 @@ A modern, AI-powered learning path generator and progress tracker. SkillProgress
 ## 📋 Table of Contents
 - [Overview](#-overview)
 - [Key Features](#-key-features)
+- [Recent Updates](#-recent-updates)
 - [Tech Stack](#-tech-stack)
 - [Architecture Summary](#-architecture-summary)
 - [Folder Structure](#-folder-structure)
@@ -48,9 +49,48 @@ SkillProgressTracker is designed for lifelong learners who want to streamline th
 - **Consistency Tracking**: Integrated streak system to encourage daily learning.
 - **Chapter Notes**: Users can take and save notes directly within each chapter.
 
+### 📱 Offline & PWA Support
+- **Progressive Web App**: Installable on any device with a dedicated mobile experience and offline access.
+- **Service Worker Caching**: Leverages Workbox with `NetworkFirst` strategies for learning paths and `CacheFirst` for static assets and fonts.
+
+### 🗺️ Interactive Onboarding
+- **Guided UI Tour**: A 2-step interactive overlay that teaches new users about AI generation and streak tracking.
+- **Smart Suggestions**: Quick-start learning chips (e.g., UI/UX, Machine Learning) to pre-fill the AI generator.
+
+### 🧪 Advanced Analytics
+- **Performance Metrics**: Comprehensive metrics on total study time, completion rates, and focus paths.
+- **Skill Breakdown**: Visual breakdown of learning intensity across various skill levels.
+
+### 🔔 Consistency Notifications
+- **Automated Reminders**: SMTP-integrated email system that triggers reminders at 6:00 PM for users at risk of losing their streak.
+- **Background Automation**: Reliable NestJS task scheduling handles midnight resets and reminder triggers.
+
 ### 🔐 Secure Authentication
 - **Session-Based Auth**: Powered by `better-auth` for secure, cookie-based authentication.
 - **Protected Routes**: Ensuring user data privacy across the dashboard and learning paths.
+
+---
+
+## 🆕 Recent Updates
+
+### 🚀 Phase 1: Onboarding & Empty States
+- **Persistent Onboarding State**: Tracks tour completion via `localStorage` in the UI store.
+- **Guided Welcome Tour**: Interactive Dashboard overlay for first-time user guidance.
+- **AI Topic Suggestions**: Clickable suggestions for rapid roadmap generation.
+
+### 🌐 Phase 2: Offline / PWA Support
+- **PWA Branding**: Custom purple/indigo gradient icons (192px, 512px) for a premium OS feel.
+- **Workbox Integration**: Advanced caching strategies for seamless offline usage.
+- **Type-Safe PWA**: Full TypeScript support for service worker registration and client declarations.
+
+### 🎮 Phase 3: Notifications & Gamification
+- **NestJS Task Scheduling**: Background cron jobs for automated system maintenance.
+- **Email Notification System**: Styled HTML templates for high-engagement streak reminders.
+- **Enhanced Streak UI**: Dynamic glow effects, orange accent themes, and "MASTER" badges for 7+ day streaks.
+
+### 🏗️ Infrastructure Updates
+- **Full-Stack Dockerization**: Multi-stage builds for optimized container orchestration.
+- **NGINX Proxying**: High-performance routing for API requests and client-side SPA navigation.
 
 ---
 
@@ -77,13 +117,15 @@ SkillProgressTracker is designed for lifelong learners who want to streamline th
 ## 🏗️ Architecture Summary
 The system follows a decoupled **Client-Server** architecture:
 
-1.  **Frontend (React)**: Handles the UI/UX, state management with Zustand, and communicates with the backend via a RESTful API.
+1.  **Frontend (React)**: Handles the UI/UX, state management with Zustand, and communicates with the backend via a RESTful API. Features a PWA layer for offline capabilities.
 2.  **Backend (NestJS)**:
     - **Controllers**: Handle HTTP requests and routing.
     - **Services**: Contain business logic (AI prompt engineering, resource discovery, progress calculation).
-    - **Modules**: Domain-driven structure (`AiModule`, `LearningPathsModule`, `ChaptersModule`, `AuthModule`).
+    - **Modules**: Domain-driven structure including new `NotificationsModule`, `StreaksModule`, and `ChallengesModule`.
+    - **Task Scheduling**: Integrated cron jobs for daily automated retention and maintenance.
     - **Database (MongoDB)**: Stores users, learning paths, chapters, and resources using Mongoose schemas.
 3.  **AI Layer**: Connects to Google Gemini API to generate structured JSON roadmaps and learning materials.
+4.  **Infrastructure**: Fully containerized with Docker, using NGINX for proxying and serving the frontend.
 
 ---
 
@@ -120,7 +162,15 @@ SkillProgressTracker/
 - MongoDB Atlas account (or local MongoDB instance)
 - Google AI Studio API Key ([Get it here](https://aistudio.google.com/app/apikey))
 
-### Backend Setup
+### Docker Setup (Recommended)
+1. Ensure you have Docker and Docker Compose installed.
+2. Build and start the entire stack:
+   ```bash
+   docker-compose up --build
+   ```
+3. The app will be available at `http://localhost:5173` with the API at `http://localhost:5000`.
+
+### Manual Backend Setup
 1. Navigate to the backend directory:
    ```bash
    cd backend
@@ -137,13 +187,20 @@ SkillProgressTracker/
    BETTER_AUTH_URL=http://localhost:5000
    GEMINI_API_KEY=your_gemini_key
    FRONTEND_URL=http://localhost:5173
+   
+   # Notifications (SMTP)
+   SMTP_HOST=smtp.resend.com
+   SMTP_PORT=465
+   SMTP_USER=resend
+   SMTP_PASS=your_resend_api_key
+   EMAIL_FROM="SkillTracker" <noreply@skilltracker.ai>
    ```
 4. Start the development server:
    ```bash
    npm run start:dev
    ```
 
-### Frontend Setup
+### Manual Frontend Setup
 1. Navigate to the frontend directory:
    ```bash
    cd frontend
@@ -182,20 +239,26 @@ SkillProgressTracker/
 - `PATCH /api/v1/chapters/:id/complete`: Mark a chapter as finished.
 - `POST /api/v1/chapters/:id/notes`: Save a note for a chapter.
 
-### Assessments (Quizzes)
+### Assessments & Challenges
 - `POST /api/v1/assessments/generate`: Generate a new quiz for a chapter.
 - `POST /api/v1/assessments/submit`: Submit answers and get a score/feedback.
 - `GET /api/v1/assessments/history/:chapterId`: View past quiz attempts for a chapter.
+- `POST /api/v1/challenges/generate`: Generate a practical mini-challenge for a chapter.
+- `POST /api/v1/challenges/:id/respond`: Submit a response for a practical challenge.
+- `GET /api/v1/challenges/history/:chapterId`: View past challenge history.
+
+### Dashboard & Analytics
+- `GET /api/v1/dashboard/stats`: Retrieve comprehensive user statistics and progress metrics.
 
 ---
 
 ## 📖 Usage Guide
-1.  **Dashboard**: Upon logging in, view your current learning paths and daily streak.
-2.  **Generate Path**: Click "Create New Path", enter a topic, select your level, and let the AI generate a roadmap for you.
-3.  **Study**: Click on a chapter to see curated documentation and videos.
-4.  **Track**: Mark chapters as completed to see your progress bar move.
-5.  **Assess**: Take an AI-generated quiz after completing a chapter to verify your understanding. Use the feedback to review concepts you missed.
-6.  **Maintain**: Keep your streak alive by completing at least one chapter every 24 hours.
+1.  **Onboarding**: First-time users are greeted with a guided tour to help them understand AI generation and streak tracking.
+2.  **Generate Path**: Use the AI generator or click a **topic suggestion** to quickly build a learning path.
+3.  **Study & Annotate**: Use curated resources and **take detailed notes** to improve future AI-generated challenges.
+4.  **Track & Install**: Install the **PWA** for mobile access and real-time progress updates.
+5.  **Practical Mastery**: Complete both AI quizzes and **practical challenges** to verify conceptual and application-based knowledge.
+6.  **Engagement**: Check the dashboard for **advanced analytics** and watch for **email reminders** to keep your streak alive.
 
 ---
 
