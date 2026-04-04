@@ -34,6 +34,13 @@ export interface Resource {
     priority: number;
 }
 
+export interface SearchQuery {
+    type: 'doc' | 'youtube';
+    title: string;
+    query: string;
+    description: string;
+}
+
 export type ResourceStatus = 'pending' | 'completed' | 'failed';
 
 export interface Chapter {
@@ -48,6 +55,7 @@ export interface Chapter {
     completionDate?: string;
     notes: Note[];
     resources: Resource[];
+    searchQueries: SearchQuery[];
     resourceStatus: ResourceStatus;
     createdAt: string;
     updatedAt: string;
