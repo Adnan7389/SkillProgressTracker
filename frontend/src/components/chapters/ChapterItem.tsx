@@ -168,6 +168,7 @@ export default function ChapterItem({ chapter }: ChapterItemProps) {
 
                     <ResourceList
                         resources={chapter.resources || []}
+                        searchQueries={chapter.searchQueries || []}
                         resourceStatus={chapter.resourceStatus || 'pending'}
                         onDiscover={() => discoverResources(chapter._id)}
                         onRefresh={() => refreshResourcesMut(chapter._id)}
