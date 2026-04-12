@@ -38,7 +38,7 @@ export class NotificationsService {
     try {
       const from = this.configService.get<string>(
         "EMAIL_FROM",
-        '"SkillTracker" <noreply@skilltracker.ai>',
+        '"Pathwise" <noreply@skilltracker.ai>',
       );
       await this.transporter.sendMail({
         from,
