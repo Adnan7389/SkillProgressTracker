@@ -1,6 +1,6 @@
-# SkillProgressTracker 🚀
+# Pathwise 🚀
 
-A modern, AI-powered learning path generator and progress tracker. SkillProgressTracker helps users master new skills by generating structured roadmaps, discovering curated resources (docs and videos), and tracking learning consistency through streaks and progress bars.
+A modern, AI-powered learning path generator and progress tracker. Pathwise helps users master new skills by generating structured roadmaps, discovering curated resources (docs and videos), and tracking learning consistency through streaks and progress bars.
 
 ## 📋 Table of Contents
 - [Overview](#-overview)
