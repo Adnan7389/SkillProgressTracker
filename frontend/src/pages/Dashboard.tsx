@@ -54,11 +54,17 @@ export default function Dashboard() {
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight mb-2">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                            <Sparkles className="w-5 h-5" />
+                        </div>
+                        <span className="text-xl font-black tracking-tighter uppercase italic text-[var(--foreground)]">Pathwise</span>
+                    </div>
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
                         Welcome back, <span className="text-[var(--primary)]">{session?.user?.name || 'Explorer'}</span>!
                     </h1>
                     <p className="text-[var(--muted-foreground)] text-lg">
-                        Track your progress and conquer new skills.
+                        Track your mastery and conquer new skills.
                     </p>
                 </div>
 
