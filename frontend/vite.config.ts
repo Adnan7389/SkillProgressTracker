@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'Skill Progress Tracker',
-        short_name: 'SkillTracker',
+        name: 'Pathwise',
+        short_name: 'Pathwise',
         description: 'AI-powered personalized learning roadmaps and progress tracking.',
         theme_color: '#4f46e5',
         icons: [
