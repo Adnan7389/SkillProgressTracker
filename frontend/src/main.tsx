@@ -18,10 +18,14 @@ const queryClient = new QueryClient({
   },
 })
 
+import { ThemeProvider } from './providers/ThemeProvider'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <ThemeProvider defaultTheme="dark" storageKey="pathwise-theme">
+        <App />
+      </ThemeProvider>
     </QueryClientProvider>
   </StrictMode>,
 )
