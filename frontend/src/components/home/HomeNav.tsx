@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
+import ThemeToggle from '../ui/ThemeToggle';
 
 export default function HomeNav() {
     const [scrolled, setScrolled] = useState(false);
@@ -23,6 +24,7 @@ export default function HomeNav() {
                     <span className="text-xl font-bold tracking-tight text-[var(--foreground)]">Pathwise</span>
                 </div>
                 <div className="flex items-center gap-6">
+                    <ThemeToggle />
                     <Link to="/login" className="hidden sm:block text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors">
                         Sign In
                     </Link>
