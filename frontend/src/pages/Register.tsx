@@ -38,7 +38,7 @@ export default function Register() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-20 p-8 bg-card rounded-xl border border-slate-800 shadow-2xl">
+        <div className="max-w-md mx-auto mt-20 p-8 bg-[var(--card)] rounded-xl border border-[var(--border)] shadow-2xl">
             <div className="flex flex-col items-center justify-center mb-8">
                 <Link to="/" className="flex items-center justify-center mb-4 transition-transform hover:scale-105">
                     <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export default function Register() {
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-slate-100 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary outline-none transition-all"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
                         placeholder="John Doe"
                     />
                 </div>
@@ -76,7 +76,7 @@ export default function Register() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-slate-100 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary outline-none transition-all"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
                         placeholder="you@example.com"
                     />
                 </div>
@@ -87,7 +87,7 @@ export default function Register() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary outline-none transition-all"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
                         placeholder="••••••••"
                     />
                 </div>
