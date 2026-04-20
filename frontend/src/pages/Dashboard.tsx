@@ -8,6 +8,7 @@ import PathCard from '../components/dashboard/PathCard';
 import CreatePathForm from '../components/dashboard/CreatePathForm';
 import AiPathGenerator from '../components/dashboard/AiPathGenerator';
 import StatsOverview from '../components/dashboard/StatsOverview';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
@@ -68,7 +69,8 @@ export default function Dashboard() {
                     </p>
                 </div>
 
-                <div className="flex gap-3 w-full md:w-auto">
+                <div className="flex gap-3 w-full md:w-auto items-center">
+                    <ThemeToggle />
                     <button
                         onClick={() => setIsAiModalOpen(true)}
                         className="btn-primary bg-gradient-to-r from-purple-600 to-indigo-600 border-0 flex-1 md:flex-none flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
@@ -85,7 +87,7 @@ export default function Dashboard() {
                     </button>
                     <button
                         onClick={handleLogout}
-                        className="btn-secondary flex items-center gap-2"
+                        className="btn-secondary flex items-center gap-2 h-full"
                     >
                         <LogOut className="w-4 h-4" />
                         <span className="hidden md:inline">Sign Out</span>
