@@ -13,14 +13,26 @@ import { ChaptersModule } from "../chapters/chapters.module.js";
 
 @Module({
   imports: [
-    // Distributed Redis cache for 24 hours (86400 seconds)
     CacheModule.registerAsync({
-      useFactory: async () => ({
-        store: await redisStore({
-          url: `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`,
-        }),
-        ttl: 86400,
-      }),
+      useFactory: async () => {
+        const redisUrl = process.env.REDIS_URL;
+
+        console.log("CACHE REDIS_URL:", redisUrl);
+
+        if (!redisUrl && process.env.NODE_ENV === "production") {
+          throw new Error("REDIS_URL is required for cache in production");
+        }
+
+        return {
+          store: await redisStore({
+            url:
+              redisUrl ||
+              `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379
+              }`,
+          }),
+          ttl: 86400,
+        };
+      },
     }),
     BullModule.registerQueue({
       name: "roadmap-generation",
@@ -37,4 +49,4 @@ import { ChaptersModule } from "../chapters/chapters.module.js";
   ],
   exports: [AiService, ResourceDiscoveryService, AiClientService],
 })
-export class AiModule {}
+export class AiModule { }
