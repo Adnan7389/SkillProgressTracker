@@ -36,6 +36,15 @@ import { validate } from "./config/env.validation.js";
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const redisUrl = configService.get<string>("REDIS_URL");
+
+        // 🔍 Debug logs
+        console.log("REDIS_URL:", redisUrl);
+
+        // 🚨 Fail fast in production if missing
+        if (!redisUrl && process.env.NODE_ENV === "production") {
+          throw new Error("REDIS_URL is required in production");
+        }
+
         if (redisUrl) {
           return {
             connection: {
@@ -43,6 +52,10 @@ import { validate } from "./config/env.validation.js";
             },
           };
         }
+
+        // ⚠️ Fallback (local development only)
+        console.log("Falling back to localhost Redis");
+
         return {
           connection: {
             host: configService.get<string>("REDIS_HOST", "localhost"),
@@ -65,4 +78,4 @@ import { validate } from "./config/env.validation.js";
 
   controllers: [AppController, TestController],
 })
-export class AppModule {}
+export class AppModule { }
