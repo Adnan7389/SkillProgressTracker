@@ -23,6 +23,7 @@ export const envSchema = z.object({
 
   REDIS_HOST: z.string().default("localhost"),
   REDIS_PORT: z.coerce.number().default(6379),
+  REDIS_URL: z.string().optional(),
 
   // Email Configuration (Optional)
   SMTP_HOST: z.string().optional(),
