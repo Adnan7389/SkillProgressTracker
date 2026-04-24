@@ -37,6 +37,13 @@ export const authOptions = {
 
   baseURL: process.env.BETTER_AUTH_URL!,
   secret: process.env.BETTER_AUTH_SECRET!,
+
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as "none" | "lax",
+      secure: process.env.NODE_ENV === "production",
+    },
+  },
 };
 
 export const auth = betterAuth(authOptions);
