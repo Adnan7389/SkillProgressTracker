@@ -32,6 +32,15 @@ export const authOptions = {
       lastActiveDate: createFieldAttribute("string", {
         defaultValue: () => new Date().toISOString().split("T")[0],
       }),
+      timezone: createFieldAttribute("string", {
+        defaultValue: "UTC",
+      }),
+      reminderHour: createFieldAttribute("number", {
+        defaultValue: 18,
+      }),
+      lastReminderSentAt: createFieldAttribute("string", {
+        defaultValue: "",
+      }),
     },
   },
 
