@@ -25,6 +25,9 @@ export const envSchema = z.object({
   REDIS_PORT: z.coerce.number().default(6379),
   REDIS_URL: z.string().optional(),
 
+  // Internal Cron Endpoint Security
+  CRON_SECRET: z.string().min(16),
+
   // Email Configuration (Optional)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
