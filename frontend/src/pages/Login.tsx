@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signIn } from '../lib/auth-client';
-import { Sparkles } from 'lucide-react';
+import BrandLogo from '../components/ui/BrandLogo';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -41,7 +41,7 @@ export default function Login() {
                 <Link to="/" className="flex items-center justify-center mb-4 transition-transform hover:scale-105">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
-                            <Sparkles className="w-5 h-5 text-[var(--primary-foreground)]" />
+                            <BrandLogo className="text-[var(--primary-foreground)]" size={20} />
                         </div>
                         <span className="text-xl font-bold tracking-tight text-[var(--foreground)]">Pathwise</span>
                     </div>
