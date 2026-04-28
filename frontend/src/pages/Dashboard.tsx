@@ -9,6 +9,7 @@ import CreatePathForm from '../components/dashboard/CreatePathForm';
 import AiPathGenerator from '../components/dashboard/AiPathGenerator';
 import StatsOverview from '../components/dashboard/StatsOverview';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import BrandLogo from '../components/ui/BrandLogo';
 import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
@@ -56,8 +57,8 @@ export default function Dashboard() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg">
-                            <Sparkles className="w-5 h-5" />
+                        <div className="w-8 h-8 bg-[var(--primary)] rounded-lg flex items-center justify-center text-[var(--primary-foreground)] shadow-lg shadow-[var(--primary)]/20">
+                            <BrandLogo size={20} />
                         </div>
                         <span className="text-xl font-black tracking-tighter uppercase italic text-[var(--foreground)]">Pathwise</span>
                     </div>
