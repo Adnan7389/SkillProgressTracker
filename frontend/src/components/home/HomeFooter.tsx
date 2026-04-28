@@ -1,4 +1,5 @@
-import { Github, Sparkles } from 'lucide-react';
+import { Github } from 'lucide-react';
+import BrandLogo from '../ui/BrandLogo';
 
 export default function HomeFooter() {
     return (
@@ -6,7 +7,7 @@ export default function HomeFooter() {
             <div className="container mx-auto px-4 max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded bg-[var(--primary)] flex items-center justify-center shadow-sm">
-                        <Sparkles className="w-3.5 h-3.5 text-[var(--primary-foreground)]" />
+                        <BrandLogo className="text-[var(--primary-foreground)]" size={14} />
                     </div>
                     <span className="font-semibold text-[var(--foreground)]">Pathwise</span>
                     <span className="text-sm text-[var(--muted-foreground)] ml-2">© 2026</span>

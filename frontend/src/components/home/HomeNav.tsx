@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import BrandLogo from '../ui/BrandLogo';
 import ThemeToggle from '../ui/ThemeToggle';
 
 export default function HomeNav() {
@@ -19,7 +19,7 @@ export default function HomeNav() {
             <div className="container mx-auto px-4 md:px-6 flex justify-between items-center max-w-6xl">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center shadow-lg shadow-[var(--primary)]/20">
-                        <Sparkles className="w-5 h-5 text-[var(--primary-foreground)]" />
+                        <BrandLogo className="text-[var(--primary-foreground)]" size={20} />
                     </div>
                     <span className="text-xl font-bold tracking-tight text-[var(--foreground)]">Pathwise</span>
                 </div>
