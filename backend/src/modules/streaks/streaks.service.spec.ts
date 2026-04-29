@@ -98,12 +98,44 @@ describe("StreaksService", () => {
     });
   });
 
+  describe("isUserReminderTime", () => {
+    it("should return true when user's local hour matches reminderHour", () => {
+      // Create a date where UTC hour is 18
+      const now = new Date("2026-04-01T18:00:00Z");
+      const user = { timezone: "UTC", reminderHour: 18 };
+      const result = (service as any).isUserReminderTime(user, now);
+      expect(result).toBe(true);
+    });
+
+    it("should return false when user's local hour does not match", () => {
+      const now = new Date("2026-04-01T15:00:00Z");
+      const user = { timezone: "UTC", reminderHour: 18 };
+      const result = (service as any).isUserReminderTime(user, now);
+      expect(result).toBe(false);
+    });
+
+    it("should default to UTC and reminderHour 18 for users without settings", () => {
+      const now = new Date("2026-04-01T18:00:00Z");
+      const user = {};
+      const result = (service as any).isUserReminderTime(user, now);
+      expect(result).toBe(true);
+    });
+
+    it("should handle invalid timezone gracefully", () => {
+      const now = new Date("2026-04-01T18:00:00Z");
+      const user = { timezone: "Invalid/Timezone", reminderHour: 18 };
+      // Should fall back to UTC comparison without throwing
+      const result = (service as any).isUserReminderTime(user, now);
+      expect(result).toBe(true);
+    });
+  });
+
   describe("handleStreakResets", () => {
     it("should be defined", () => {
       expect(service.handleStreakResets).toBeDefined();
     });
 
-    it("should be a cron job method", () => {
+    it("should be a callable method (not a cron job)", () => {
       expect(typeof service.handleStreakResets).toBe("function");
     });
   });
@@ -113,7 +145,7 @@ describe("StreaksService", () => {
       expect(service.sendStreakReminders).toBeDefined();
     });
 
-    it("should be a cron job method", () => {
+    it("should be a callable method (not a cron job)", () => {
       expect(typeof service.sendStreakReminders).toBe("function");
     });
   });
