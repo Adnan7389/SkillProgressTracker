@@ -30,7 +30,6 @@
         "@nestjs/mapped-types": "^2.1.0",
         "@nestjs/mongoose": "^11.0.3",
         "@nestjs/platform-express": "^10.0.0",
-        "@nestjs/schedule": "^6.1.1",
         "@nestjs/swagger": "^7.4.2",
         "@types/nodemailer": "^7.0.11",
         "better-auth": "^1.4.5",
