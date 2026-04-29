@@ -62,8 +62,9 @@ SkillProgressTracker is designed for lifelong learners who want to streamline th
 - **Skill Breakdown**: Visual breakdown of learning intensity across various skill levels.
 
 ### 🔔 Consistency Notifications
-- **Automated Reminders**: SMTP-integrated email system that triggers reminders at 6:00 PM for users at risk of losing their streak.
-- **Background Automation**: Reliable NestJS task scheduling handles midnight resets and reminder triggers.
+- **Timezone-Aware Reminders**: SMTP-integrated email system that triggers reminders at each user's configured hour (default: 6 PM local time) for users at risk of losing their streak.
+- **External Scheduling**: Secure internal API endpoints (`/api/v1/internal/run-reminders`, `/api/v1/internal/reset-streaks`) triggered by external schedulers (e.g., cron-job.org) for reliable execution on free-tier hosting.
+- **Idempotent Execution**: Duplicate triggers within the same day are safely ignored — users never receive duplicate reminder emails.
 
 ### 🔐 Secure Authentication
 - **Session-Based Auth**: Powered by `better-auth` for secure, cookie-based authentication.
@@ -84,7 +85,7 @@ SkillProgressTracker is designed for lifelong learners who want to streamline th
 - **Type-Safe PWA**: Full TypeScript support for service worker registration and client declarations.
 
 ### 🎮 Phase 3: Notifications & Gamification
-- **NestJS Task Scheduling**: Background cron jobs for automated system maintenance.
+- **External Cron Architecture**: Replaced internal `@nestjs/schedule` cron jobs with secure, externally-triggered API endpoints for reliable execution on Render's free tier.
 - **Email Notification System**: Styled HTML templates for high-engagement streak reminders.
 - **Enhanced Streak UI**: Dynamic glow effects, orange accent themes, and "MASTER" badges for 7+ day streaks.
 
@@ -121,8 +122,8 @@ The system follows a decoupled **Client-Server** architecture:
 2.  **Backend (NestJS)**:
     - **Controllers**: Handle HTTP requests and routing.
     - **Services**: Contain business logic (AI prompt engineering, resource discovery, progress calculation).
-    - **Modules**: Domain-driven structure including new `NotificationsModule`, `StreaksModule`, and `ChallengesModule`.
-    - **Task Scheduling**: Integrated cron jobs for daily automated retention and maintenance.
+    - **Modules**: Domain-driven structure including `NotificationsModule`, `StreaksModule`, `ChallengesModule`, and `InternalModule`.
+    - **External Scheduling**: Secure internal endpoints triggered by external schedulers (cron-job.org) for streak resets and reminder emails. Secured via `x-cron-secret` header validation.
     - **Database (MongoDB)**: Stores users, learning paths, chapters, and resources using Mongoose schemas.
 3.  **AI Layer**: Connects to Google Gemini API to generate structured JSON roadmaps and learning materials.
 4.  **Infrastructure**: Fully containerized with Docker, using NGINX for proxying and serving the frontend.
@@ -141,6 +142,9 @@ SkillProgressTracker/
 │   │   │   ├── ai/         # Gemini integration & resource discovery
 │   │   │   ├── learning-paths/ # Path management (CRUD)
 │   │   │   ├── chapters/   # Chapter management
+│   │   │   ├── internal/   # Secure cron-triggered endpoints (reminders, resets)
+│   │   │   ├── streaks/    # Streak tracking & timezone-aware reminders
+│   │   │   ├── notifications/ # Email transporter & templates
 │   │   │   └── progress/   # Progress tracking logic
 │   │   └── main.ts         # Server entry point
 ├── frontend/               # React Vite Application
@@ -194,6 +198,9 @@ SkillProgressTracker/
    SMTP_USER=resend
    SMTP_PASS=your_resend_api_key
    EMAIL_FROM="SkillTracker" <noreply@skilltracker.ai>
+    
+   # Internal Cron Security (generate with: openssl rand -base64 32)
+   CRON_SECRET=your_cron_secret_min_16_chars
    ```
 4. Start the development server:
    ```bash
@@ -246,6 +253,12 @@ SkillProgressTracker/
 - `POST /api/v1/challenges/generate`: Generate a practical mini-challenge for a chapter.
 - `POST /api/v1/challenges/:id/respond`: Submit a response for a practical challenge.
 - `GET /api/v1/challenges/history/:chapterId`: View past challenge history.
+
+### Internal (Cron-Triggered)
+> Secured with `x-cron-secret` header. Returns `401` if the secret is missing or invalid.
+
+- `POST /api/v1/internal/run-reminders`: Trigger timezone-aware streak reminder emails. Only sends to users whose local hour matches their configured `reminderHour`.
+- `POST /api/v1/internal/reset-streaks`: Reset streaks for users who haven't been active since before yesterday.
 
 ### Dashboard & Analytics
 - `GET /api/v1/dashboard/stats`: Retrieve comprehensive user statistics and progress metrics.
