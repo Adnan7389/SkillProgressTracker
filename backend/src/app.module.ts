@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { BullModule } from "@nestjs/bullmq";
 import { AppController } from "./app.controller.js";
-import { ScheduleModule } from "@nestjs/schedule";
+import { InternalModule } from "./modules/internal/internal.module.js";
 import { AuthModule } from "./auth/auth.module.js";
 import { TestController } from "./test/test.controller.js";
 import { LearningPathsModule } from "./modules/learning-paths/learning-paths.module.js";
@@ -24,7 +24,7 @@ import { validate } from "./config/env.validation.js";
       envFilePath: ".env",
       validate,
     }),
-    ScheduleModule.forRoot(),
+
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -74,6 +74,7 @@ import { validate } from "./config/env.validation.js";
     DashboardModule,
     StreaksModule,
     NotificationsModule,
+    InternalModule,
   ],
 
   controllers: [AppController, TestController],
