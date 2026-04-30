@@ -36,4 +36,3 @@ export class Assessment {
 }
 
 export const AssessmentSchema = SchemaFactory.createForClass(Assessment);
-AssessmentSchema.index({ chapterId: 1 });

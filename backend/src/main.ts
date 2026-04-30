@@ -1,4 +1,5 @@
 import { NestFactory, HttpAdapterHost } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module.js";
 import { ValidationPipe } from "@nestjs/common";
@@ -16,8 +17,20 @@ async function bootstrap() {
   await mongoClient.connect();
   console.log("✅ MongoDB connected");
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: loggerConfig,
+  });
+
+  // Trust Render's proxy for rate limiting
+  app.getHttpAdapter().getInstance().set("trust proxy", 1);
+
+  // Root handler for health checks (bypasses global prefix)
+  app.getHttpAdapter().getInstance().get("/", (req, res) => {
+    res.json({
+      message: "Pathwise API is running",
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+    });
   });
 
   const config = new DocumentBuilder()
