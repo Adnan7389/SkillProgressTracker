@@ -24,6 +24,17 @@ async function bootstrap() {
   // Trust Render's proxy for rate limiting
   app.getHttpAdapter().getInstance().set("trust proxy", 1);
 
+  // Raw request logger — logs EVERY request before NestJS routing
+  // Used to diagnose whether cron-job.org requests reach the server
+  app.getHttpAdapter().getInstance().use((req, res, next) => {
+    const ip = req.headers["x-forwarded-for"] || req.ip || "unknown";
+    const hasCronSecret = !!req.headers["x-cron-secret"];
+    console.log(
+      `[RequestLog] ${new Date().toISOString()} | ${req.method} ${req.url} | IP: ${ip} | x-cron-secret: ${hasCronSecret}`,
+    );
+    next();
+  });
+
   // Root handler for health checks (bypasses global prefix)
   app.getHttpAdapter().getInstance().get("/", (req, res) => {
     res.json({

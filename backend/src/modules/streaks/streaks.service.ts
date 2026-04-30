@@ -94,66 +94,79 @@ export class StreaksService {
     processed: number;
     sent: number;
     skipped: number;
+    failed: number;
   }> {
     this.logger.log("Sending daily streak reminders...");
-    const db = mongoClient.db();
-    const usersCollection = db.collection("user");
-
     const now = new Date();
-    const todayStr = this.normalize(now)!;
+    const todayStr = this.normalize(now);
+    const usersCollection = mongoClient.db().collection("user");
 
-    // Find users with a streak who haven't been active today
-    // and haven't already been reminded today (idempotency)
     const usersToRemind = await usersCollection
       .find({
         lastActiveDate: { $ne: todayStr },
         learningStreak: { $gt: 0 },
-        email: { $exists: true },
+        email: { $exists: true, $ne: "" },
         lastReminderSentAt: { $ne: todayStr },
       })
       .toArray();
 
+    this.logger.log(`Found ${usersToRemind.length} potential users to remind`);
+
+    // Process all users in parallel to avoid Render's 30s timeout
+    const results = await Promise.allSettled(
+      usersToRemind.map(async (user) => {
+        // Check if it's the right time in the user's timezone
+        if (
+          !this.isUserReminderTime(
+            user as unknown as { timezone?: string; reminderHour?: number },
+            now,
+          )
+        ) {
+          return "skipped";
+        }
+
+        try {
+          await this.notificationsService.sendStreakReminder(
+            user.email as string,
+            (user.name as string) || "Learner",
+            (user.learningStreak as number) || 0,
+          );
+
+          await usersCollection.updateOne(
+            { _id: user._id },
+            { $set: { lastReminderSentAt: todayStr } },
+          );
+
+          return "sent";
+        } catch (error) {
+          this.logger.error(`Failed to send reminder to ${user.email}:`, error);
+          throw error;
+        }
+      }),
+    );
+
     let sent = 0;
     let skipped = 0;
+    let failed = 0;
 
-    for (const user of usersToRemind) {
-      // Check if it's the right time in the user's timezone
-      if (!this.isUserReminderTime(user as unknown as { timezone?: string; reminderHour?: number }, now)) {
-        skipped++;
-        continue;
+    results.forEach((result) => {
+      if (result.status === "fulfilled") {
+        if (result.value === "sent") sent++;
+        else skipped++;
+      } else {
+        failed++;
       }
-
-      try {
-        await this.notificationsService.sendStreakReminder(
-          user.email as string,
-          (user.name as string) || "Scholar",
-          (user.learningStreak as number) || 0,
-        );
-
-        // Mark as reminded today (idempotency)
-        await usersCollection.updateOne(
-          { _id: user._id },
-          { $set: { lastReminderSentAt: todayStr } },
-        );
-
-        sent++;
-      } catch (error) {
-        this.logger.error(
-          `Failed to send reminder to ${user.email}`,
-          error.stack,
-        );
-        skipped++;
-      }
-    }
+    });
 
     this.logger.log(
-      `Reminder process complete. Processed: ${usersToRemind.length}, Sent: ${sent}, Skipped: ${skipped}`,
+      `Reminder process complete. Processed: ${usersToRemind.length}, Sent: ${sent}, Skipped: ${skipped}, Failed: ${failed}`,
     );
 
     return {
       processed: usersToRemind.length,
       sent,
       skipped,
+      failed,
     };
   }
 
