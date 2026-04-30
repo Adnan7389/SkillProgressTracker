@@ -2,6 +2,8 @@
 
 A modern, AI-powered learning path generator and progress tracker. Pathwise helps users master new skills by generating structured roadmaps, discovering curated resources (docs and videos), and tracking learning consistency through streaks and progress bars.
 
+🔗 **Live App**: [https://pathwise-app.vercel.app](https://pathwise-app.vercel.app)
+
 ## 📋 Table of Contents
 - [Overview](#-overview)
 - [Key Features](#-key-features)
